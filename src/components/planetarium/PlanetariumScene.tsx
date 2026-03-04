@@ -3,19 +3,24 @@ import { Stars } from '@react-three/drei';
 import { Suspense } from 'react';
 import { ProjectionDome } from './ProjectionDome';
 import { SceneCamera } from './SceneCamera';
+import { PlaceholderDome } from './PlaceholderDome';
+import { usePlanetariumStore } from '@/store/planetariumStore';
 
 export function PlanetariumScene() {
+  const activeIndex = usePlanetariumStore((s) => s.activeIndex);
+  const hasMedia = activeIndex >= 0;
+
   return (
     <Canvas
       className="!absolute inset-0"
-      gl={{ antialias: true }}
-      style={{ background: '#000' }}
+      gl={{ antialias: true, alpha: false }}
+      style={{ background: '#030308' }}
     >
       <Suspense fallback={null}>
         <SceneCamera />
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-        <ambientLight intensity={0.1} />
-        <ProjectionDome />
+        <Stars radius={120} depth={60} count={4000} factor={5} saturation={0.1} fade speed={0.8} />
+        <ambientLight intensity={0.05} />
+        {hasMedia ? <ProjectionDome /> : <PlaceholderDome />}
       </Suspense>
     </Canvas>
   );

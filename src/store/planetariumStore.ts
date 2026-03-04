@@ -5,6 +5,8 @@ export interface MediaItem {
   filename: string;
   type: 'video' | 'image';
   blobUrl: string;
+  duration?: number;
+  thumbnailUrl?: string;
 }
 
 interface PlanetariumState {
@@ -14,11 +16,12 @@ interface PlanetariumState {
   isPlaying: boolean;
   currentTime: number;
   duration: number;
+  volume: number;
 
   // Settings
-  distance: number;      // camera Z: -5 to 5
-  screenSize: number;    // mesh scale: 0.5 to 3
-  curveAmount: number;   // thetaLength in degrees: 60 to 360
+  distance: number;
+  screenSize: number;
+  curveAmount: number;
 
   // UI
   showPlaylist: boolean;
@@ -34,14 +37,23 @@ interface PlanetariumState {
   togglePlay: () => void;
   setCurrentTime: (time: number) => void;
   setDuration: (duration: number) => void;
+  setVolume: (v: number) => void;
   setDistance: (d: number) => void;
   setScreenSize: (s: number) => void;
   setCurveAmount: (c: number) => void;
+  resetSettings: () => void;
   togglePlaylist: () => void;
   toggleSettings: () => void;
+  updateItemDuration: (id: string, duration: number) => void;
 }
 
 let idCounter = 0;
+
+const DEFAULT_SETTINGS = {
+  distance: 0,
+  screenSize: 1,
+  curveAmount: 180,
+};
 
 export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   playlist: [],
@@ -49,10 +61,9 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   isPlaying: false,
   currentTime: 0,
   duration: 0,
+  volume: 0.8,
 
-  distance: 0,
-  screenSize: 1,
-  curveAmount: 180,
+  ...DEFAULT_SETTINGS,
 
   showPlaylist: false,
   showSettings: false,
@@ -60,12 +71,46 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   addFiles: (files) => {
     const newItems: MediaItem[] = files.map((file) => {
       const isVideo = file.type.startsWith('video/');
-      return {
+      const blobUrl = URL.createObjectURL(file);
+      
+      const item: MediaItem = {
         id: `media-${++idCounter}`,
         filename: file.name,
         type: isVideo ? 'video' : 'image',
-        blobUrl: URL.createObjectURL(file),
+        blobUrl,
       };
+
+      // Generate thumbnail for videos
+      if (isVideo) {
+        const video = document.createElement('video');
+        video.src = blobUrl;
+        video.muted = true;
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          const duration = video.duration;
+          get().updateItemDuration(item.id, duration);
+          // Seek to 1s for thumbnail
+          video.currentTime = Math.min(1, duration * 0.1);
+        };
+        video.onseeked = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 120;
+          canvas.height = 68;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, 120, 68);
+            const thumbUrl = canvas.toDataURL('image/jpeg', 0.6);
+            set((s) => ({
+              playlist: s.playlist.map((p) =>
+                p.id === item.id ? { ...p, thumbnailUrl: thumbUrl } : p
+              ),
+            }));
+          }
+          video.remove();
+        };
+      }
+
+      return item;
     });
     const state = get();
     const wasEmpty = state.playlist.length === 0;
@@ -101,9 +146,17 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
   setCurrentTime: (time) => set({ currentTime: time }),
   setDuration: (duration) => set({ duration }),
+  setVolume: (v) => set({ volume: v }),
   setDistance: (d) => set({ distance: d }),
   setScreenSize: (s) => set({ screenSize: s }),
   setCurveAmount: (c) => set({ curveAmount: c }),
+  resetSettings: () => set(DEFAULT_SETTINGS),
   togglePlaylist: () => set((s) => ({ showPlaylist: !s.showPlaylist })),
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
+  updateItemDuration: (id, duration) =>
+    set((s) => ({
+      playlist: s.playlist.map((p) =>
+        p.id === id ? { ...p, duration } : p
+      ),
+    })),
 }));
