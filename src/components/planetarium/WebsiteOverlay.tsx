@@ -26,7 +26,7 @@ export function WebsiteDome() {
   // Scale so the iframe spans the dome width in world units
   const scaleX = arcWidth / iframeWidth;
   const scaleY = baseHeight / iframeHeight;
-  const uniformScale = Math.min(scaleX, scaleY) * 1000;
+  const uniformScale = Math.min(scaleX, scaleY) * 100;
 
   return (
     <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
