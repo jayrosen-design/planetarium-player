@@ -7,14 +7,15 @@ import galaxyImage from '@/assets/galaxy-placeholder.jpg';
 export function PlaceholderDome() {
   const meshRef = useRef<THREE.Mesh>(null);
   const screenSize = usePlanetariumStore((s) => s.screenSize);
+  const screenHeight = usePlanetariumStore((s) => s.screenHeight);
   const curveAmount = usePlanetariumStore((s) => s.curveAmount);
 
   const thetaLength = (curveAmount / 360) * Math.PI * 2;
   const thetaStart = -thetaLength / 2 + Math.PI;
 
   const geometryArgs = useMemo<[number, number, number, number, number, boolean, number, number]>(
-    () => [10, 10, 8, 64, 1, true, thetaStart, thetaLength],
-    [thetaStart, thetaLength]
+    () => [10, 10, 8 * screenHeight, 64, 1, true, thetaStart, thetaLength],
+    [thetaStart, thetaLength, screenHeight]
   );
 
   const texture = useLoader(THREE.TextureLoader, galaxyImage);
