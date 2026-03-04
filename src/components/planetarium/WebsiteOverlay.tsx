@@ -19,9 +19,8 @@ export function WebsiteDome() {
   const arcWidth = radius * thetaLength;
   const baseHeight = 8 * screenSize * screenHeight;
 
-  // Iframe pixel dimensions
-  const iframeWidth = 1280;
-  const iframeHeight = 800;
+  const iframeWidth = usePlanetariumStore((s) => s.iframeWidth);
+  const iframeHeight = usePlanetariumStore((s) => s.iframeHeight);
 
   // Scale so the iframe spans the dome width in world units
   const scaleX = arcWidth / iframeWidth;

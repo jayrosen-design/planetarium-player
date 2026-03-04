@@ -28,6 +28,8 @@ interface PlanetariumState {
   stretchToFill: boolean;
   screenRotation: number;  // Y-axis degrees: -180 to 180
   screenTilt: number;      // X-axis degrees: -90 to 90
+  iframeWidth: number;     // iframe pixel width
+  iframeHeight: number;    // iframe pixel height
 
   // UI
   showPlaylist: boolean;
@@ -53,6 +55,8 @@ interface PlanetariumState {
   setStretchToFill: (v: boolean) => void;
   setScreenRotation: (r: number) => void;
   setScreenTilt: (t: number) => void;
+  setIframeWidth: (w: number) => void;
+  setIframeHeight: (h: number) => void;
   resetSettings: () => void;
   togglePlaylist: () => void;
   toggleSettings: () => void;
@@ -70,6 +74,8 @@ const DEFAULT_SETTINGS = {
   stretchToFill: true,
   screenRotation: -3,
   screenTilt: 6,
+  iframeWidth: 1280,
+  iframeHeight: 800,
 };
 
 export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
@@ -181,6 +187,8 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   setStretchToFill: (v) => set({ stretchToFill: v }),
   setScreenRotation: (r) => set({ screenRotation: r }),
   setScreenTilt: (t) => set({ screenTilt: t }),
+  setIframeWidth: (w) => set({ iframeWidth: w }),
+  setIframeHeight: (h) => set({ iframeHeight: h }),
   resetSettings: () => set(DEFAULT_SETTINGS),
   togglePlaylist: () => set((s) => ({ showPlaylist: !s.showPlaylist })),
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
