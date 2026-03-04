@@ -6,49 +6,50 @@
 
 @layer base {
   :root {
-    --background: 220 20% 4%;
-    --foreground: 210 20% 90%;
+    --background: 225 25% 3%;
+    --foreground: 210 20% 92%;
 
-    --card: 220 20% 8%;
-    --card-foreground: 210 20% 90%;
+    --card: 225 20% 7%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 220 20% 8%;
-    --popover-foreground: 210 20% 90%;
+    --popover: 225 20% 7%;
+    --popover-foreground: 210 20% 92%;
 
-    --primary: 185 70% 50%;
-    --primary-foreground: 220 20% 4%;
+    --primary: 185 80% 55%;
+    --primary-foreground: 225 30% 4%;
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 225 18% 13%;
+    --secondary-foreground: 210 20% 80%;
 
-    --muted: 220 15% 12%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 225 15% 10%;
+    --muted-foreground: 215 15% 50%;
 
-    --accent: 185 60% 40%;
+    --accent: 270 60% 55%;
     --accent-foreground: 210 20% 95%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 15% 18%;
-    --input: 220 15% 18%;
-    --ring: 185 70% 50%;
+    --border: 225 15% 16%;
+    --input: 225 15% 16%;
+    --ring: 185 80% 55%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 220 20% 6%;
+    --sidebar-background: 225 20% 5%;
     --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 185 70% 50%;
-    --sidebar-primary-foreground: 220 20% 4%;
-    --sidebar-accent: 220 15% 12%;
+    --sidebar-primary: 185 80% 55%;
+    --sidebar-primary-foreground: 225 30% 4%;
+    --sidebar-accent: 225 15% 10%;
     --sidebar-accent-foreground: 210 20% 85%;
-    --sidebar-border: 220 15% 18%;
-    --sidebar-ring: 185 70% 50%;
+    --sidebar-border: 225 15% 16%;
+    --sidebar-ring: 185 80% 55%;
 
-    /* Custom tokens */
-    --glow-primary: 185 70% 50%;
-    --glass-bg: 220 20% 8% / 0.7;
-    --glass-border: 220 15% 25% / 0.5;
+    /* Custom planetarium tokens */
+    --glow-cyan: 185 80% 55%;
+    --glow-purple: 270 60% 55%;
+    --glass-bg: 225 25% 6%;
+    --glass-border: 225 20% 22%;
 
     font-family: 'Space Grotesk', system-ui, sans-serif;
   }
@@ -66,21 +67,57 @@
 
 @layer utilities {
   .glass-panel {
-    background: hsla(var(--glass-bg));
-    backdrop-filter: blur(16px);
-    border: 1px solid hsla(var(--glass-border));
+    background: hsla(var(--glass-bg) / 0.75);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    border: 1px solid hsla(var(--glass-border) / 0.4);
+  }
+
+  .glass-panel-heavy {
+    background: hsla(var(--glass-bg) / 0.85);
+    backdrop-filter: blur(40px) saturate(1.8);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
+    border: 1px solid hsla(var(--glass-border) / 0.5);
   }
 
   .glow-text {
-    text-shadow: 0 0 20px hsla(var(--glow-primary) / 0.5);
+    text-shadow: 0 0 20px hsla(var(--glow-cyan) / 0.6),
+                 0 0 40px hsla(var(--glow-cyan) / 0.2);
   }
 
-  .glow-border {
-    box-shadow: 0 0 15px -3px hsla(var(--glow-primary) / 0.3),
-                inset 0 0 15px -8px hsla(var(--glow-primary) / 0.1);
+  .glow-border-cyan {
+    box-shadow: 0 0 20px -4px hsla(var(--glow-cyan) / 0.35),
+                0 0 60px -10px hsla(var(--glow-cyan) / 0.15),
+                inset 0 1px 0 0 hsla(var(--glow-cyan) / 0.1);
+  }
+
+  .glow-border-purple {
+    box-shadow: 0 0 20px -4px hsla(var(--glow-purple) / 0.3),
+                0 0 60px -10px hsla(var(--glow-purple) / 0.1),
+                inset 0 1px 0 0 hsla(var(--glow-purple) / 0.08);
+  }
+
+  .glow-active {
+    box-shadow: 0 0 12px -2px hsla(var(--glow-cyan) / 0.5),
+                0 0 30px -5px hsla(var(--glow-cyan) / 0.2);
+    border-color: hsla(var(--glow-cyan) / 0.5);
   }
 
   .font-mono-display {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  .slider-glow .slider-range {
+    box-shadow: 0 0 8px hsla(var(--glow-cyan) / 0.5);
+  }
+
+  .drop-zone {
+    border: 2px dashed hsla(var(--glow-cyan) / 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .drop-zone:hover {
+    border-color: hsla(var(--glow-cyan) / 0.6);
+    background: hsla(var(--glow-cyan) / 0.05);
   }
 }

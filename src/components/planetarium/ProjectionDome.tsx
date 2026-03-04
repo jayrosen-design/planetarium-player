@@ -11,6 +11,7 @@ export function ProjectionDome() {
   const playlist = usePlanetariumStore((s) => s.playlist);
   const activeIndex = usePlanetariumStore((s) => s.activeIndex);
   const isPlaying = usePlanetariumStore((s) => s.isPlaying);
+  const volume = usePlanetariumStore((s) => s.volume);
   const screenSize = usePlanetariumStore((s) => s.screenSize);
   const curveAmount = usePlanetariumStore((s) => s.curveAmount);
   const setCurrentTime = usePlanetariumStore((s) => s.setCurrentTime);
@@ -102,6 +103,12 @@ export function ProjectionDome() {
       video.pause();
     }
   }, [isPlaying, activeItem?.id]);
+
+  // Volume sync
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) video.volume = volume;
+  }, [volume]);
 
   // Update current time
   useFrame(() => {
