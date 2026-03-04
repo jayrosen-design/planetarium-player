@@ -61,14 +61,14 @@ interface PlanetariumState {
 let idCounter = 0;
 
 const DEFAULT_SETTINGS = {
-  distance: 0,
-  screenSize: 1,
-  screenHeight: 1,
-  curveAmount: 180,
-  bgColor: '#000000',
-  stretchToFill: false,
-  screenRotation: 0,
-  screenTilt: 0,
+  distance: 2.4,
+  screenSize: 1.4,
+  screenHeight: 1.5,
+  curveAmount: 140,
+  bgColor: '#333333',
+  stretchToFill: true,
+  screenRotation: -3,
+  screenTilt: 6,
 };
 
 export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
