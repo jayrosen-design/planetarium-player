@@ -25,11 +25,13 @@ export function SceneCamera() {
   return (
     <OrbitControls
       ref={controlsRef}
-      enableZoom={false}
+      enableZoom={true}
       enablePan={false}
       rotateSpeed={0.5}
       dampingFactor={0.1}
       enableDamping
+      minDistance={-10}
+      maxDistance={15}
     />
   );
 }
