@@ -14,12 +14,13 @@ export function WebsiteDome() {
 
   if (!activeItem || activeItem.type !== 'website' || !activeItem.url) return null;
 
-  // Position the iframe on the inner surface of the dome, facing inward
+  // Match the dome cylinder dimensions
   const radius = 10 * screenSize;
-  // Scale the iframe to cover more of the dome
-  const iframeWidth = Math.round(curveAmount * 8);
-  const iframeHeight = Math.round(iframeWidth * 0.5625);
-  const scaleFactor = 0.018 * screenSize;
+  const iframeWidth = 1920;
+  const iframeHeight = 1080;
+  // Scale to match the cylinder's visual size (cylinder radius=10, so ~20 units wide at thetaLength)
+  const arcWidth = 2 * radius * Math.sin((curveAmount / 360) * Math.PI);
+  const scaleFactor = (arcWidth / iframeWidth) * 0.95;
 
   return (
     <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
