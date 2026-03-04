@@ -25,6 +25,8 @@ export function SettingsPanel() {
   const setCurveAmount = usePlanetariumStore((s) => s.setCurveAmount);
   const setBgColor = usePlanetariumStore((s) => s.setBgColor);
   const setStretchToFill = usePlanetariumStore((s) => s.setStretchToFill);
+  const screenRotation = usePlanetariumStore((s) => s.screenRotation);
+  const setScreenRotation = usePlanetariumStore((s) => s.setScreenRotation);
   const resetSettings = usePlanetariumStore((s) => s.resetSettings);
 
   if (!showSettings) return null;
@@ -136,6 +138,18 @@ export function SettingsPanel() {
           <Slider value={[distance]} onValueChange={([v]) => setDistance(v)} min={-5} max={5} step={0.1} />
           <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
             <span>Near</span><span>Far</span>
+          </div>
+        </div>
+
+        {/* Screen Rotation */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-baseline">
+            <span className="text-xs font-medium text-foreground/80">Screen Rotation</span>
+            <span className="text-xs font-mono text-primary glow-text">{screenRotation}°</span>
+          </div>
+          <Slider value={[screenRotation]} onValueChange={([v]) => setScreenRotation(v)} min={-180} max={180} step={1} />
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+            <span>-180°</span><span>0°</span><span>180°</span>
           </div>
         </div>
       </div>

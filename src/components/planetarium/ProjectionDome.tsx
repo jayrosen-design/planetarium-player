@@ -18,6 +18,7 @@ export function ProjectionDome() {
   const curveAmount = usePlanetariumStore((s) => s.curveAmount);
   const bgColor = usePlanetariumStore((s) => s.bgColor);
   const stretchToFill = usePlanetariumStore((s) => s.stretchToFill);
+  const screenRotation = usePlanetariumStore((s) => s.screenRotation);
   const setCurrentTime = usePlanetariumStore((s) => s.setCurrentTime);
   const setDuration = usePlanetariumStore((s) => s.setDuration);
   const setIsPlaying = usePlanetariumStore((s) => s.setIsPlaying);
@@ -142,7 +143,7 @@ export function ProjectionDome() {
   }, [activeItem?.id]);
 
   return (
-    <group>
+    <group rotation={[0, (screenRotation * Math.PI) / 180, 0]}>
       {/* Background color cylinder (behind the image, visible when height > image) */}
       <mesh ref={bgMeshRef}>
         <cylinderGeometry args={bgGeometryArgs} />
