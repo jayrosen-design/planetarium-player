@@ -29,7 +29,17 @@ export function SettingsPanel() {
   const setScreenRotation = usePlanetariumStore((s) => s.setScreenRotation);
   const screenTilt = usePlanetariumStore((s) => s.screenTilt);
   const setScreenTilt = usePlanetariumStore((s) => s.setScreenTilt);
+  const iframeWidth = usePlanetariumStore((s) => s.iframeWidth);
+  const setIframeWidth = usePlanetariumStore((s) => s.setIframeWidth);
+  const iframeHeight = usePlanetariumStore((s) => s.iframeHeight);
+  const setIframeHeight = usePlanetariumStore((s) => s.setIframeHeight);
   const resetSettings = usePlanetariumStore((s) => s.resetSettings);
+
+  // Check if active item is a website
+  const playlist = usePlanetariumStore((s) => s.playlist);
+  const activeIndex = usePlanetariumStore((s) => s.activeIndex);
+  const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
+  const isWebsite = activeItem?.type === 'website';
 
   if (!showSettings) return null;
 
@@ -166,6 +176,33 @@ export function SettingsPanel() {
             <span>-90°</span><span>0°</span><span>90°</span>
           </div>
         </div>
+
+        {/* Iframe Size (only for website items) */}
+        {isWebsite && (
+          <>
+            <div className="space-y-3">
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs font-medium text-foreground/80">Iframe Width</span>
+                <span className="text-xs font-mono text-primary glow-text">{iframeWidth}px</span>
+              </div>
+              <Slider value={[iframeWidth]} onValueChange={([v]) => setIframeWidth(v)} min={320} max={3840} step={10} />
+              <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                <span>320</span><span>3840</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-baseline">
+                <span className="text-xs font-medium text-foreground/80">Iframe Height</span>
+                <span className="text-xs font-mono text-primary glow-text">{iframeHeight}px</span>
+              </div>
+              <Slider value={[iframeHeight]} onValueChange={([v]) => setIframeHeight(v)} min={200} max={2160} step={10} />
+              <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                <span>200</span><span>2160</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Reset button */}
