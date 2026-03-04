@@ -5,6 +5,7 @@ import { usePlanetariumStore } from '@/store/planetariumStore';
 
 export function ProjectionDome() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const bgMeshRef = useRef<THREE.Mesh>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
@@ -13,7 +14,10 @@ export function ProjectionDome() {
   const isPlaying = usePlanetariumStore((s) => s.isPlaying);
   const volume = usePlanetariumStore((s) => s.volume);
   const screenSize = usePlanetariumStore((s) => s.screenSize);
+  const screenHeight = usePlanetariumStore((s) => s.screenHeight);
   const curveAmount = usePlanetariumStore((s) => s.curveAmount);
+  const bgColor = usePlanetariumStore((s) => s.bgColor);
+  const stretchToFill = usePlanetariumStore((s) => s.stretchToFill);
   const setCurrentTime = usePlanetariumStore((s) => s.setCurrentTime);
   const setDuration = usePlanetariumStore((s) => s.setDuration);
   const setIsPlaying = usePlanetariumStore((s) => s.setIsPlaying);
@@ -22,14 +26,22 @@ export function ProjectionDome() {
   const thetaLength = (curveAmount / 360) * Math.PI * 2;
   const thetaStart = -thetaLength / 2 + Math.PI;
 
+  const baseHeight = 8;
+  const actualHeight = baseHeight * screenHeight;
+
+  // Background cylinder (slightly larger, for the solid color behind the image)
+  const bgGeometryArgs = useMemo<[number, number, number, number, number, boolean, number, number]>(() => {
+    return [10.05, 10.05, actualHeight, 64, 1, true, thetaStart, thetaLength];
+  }, [thetaStart, thetaLength, actualHeight]);
+
+  // Image cylinder
   const geometryArgs = useMemo<[number, number, number, number, number, boolean, number, number]>(() => {
-    const radius = 10;
-    return [radius, radius, 8, 64, 1, true, thetaStart, thetaLength];
-  }, [thetaStart, thetaLength]);
+    const imageHeight = stretchToFill ? actualHeight : baseHeight;
+    return [10, 10, imageHeight, 64, 1, true, thetaStart, thetaLength];
+  }, [thetaStart, thetaLength, stretchToFill, actualHeight, baseHeight]);
 
   // Load texture when active item changes
   useEffect(() => {
-    // Cleanup previous texture
     if (texture) {
       texture.dispose();
       setTexture(null);
@@ -68,7 +80,6 @@ export function ProjectionDome() {
       tex.offset.x = 1;
       setTexture(tex);
     } else {
-      // Image - use an Image element for reliable loading
       if (videoRef.current) {
         videoRef.current.pause();
         videoRef.current.src = '';
@@ -94,7 +105,6 @@ export function ProjectionDome() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !activeItem || activeItem.type !== 'video') return;
-
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
@@ -118,6 +128,9 @@ export function ProjectionDome() {
     if (meshRef.current) {
       meshRef.current.scale.set(screenSize, screenSize, screenSize);
     }
+    if (bgMeshRef.current) {
+      bgMeshRef.current.scale.set(screenSize, screenSize, screenSize);
+    }
   });
 
   // Expose video ref globally for seek
@@ -129,15 +142,24 @@ export function ProjectionDome() {
   }, [activeItem?.id]);
 
   return (
-    <mesh ref={meshRef}>
-      <cylinderGeometry args={geometryArgs} />
-      <meshBasicMaterial
-        side={THREE.BackSide}
-        map={texture}
-        color={texture ? undefined : '#111118'}
-        toneMapped={false}
-        key={texture?.uuid || 'no-tex'}
-      />
-    </mesh>
+    <group>
+      {/* Background color cylinder (behind the image, visible when height > image) */}
+      <mesh ref={bgMeshRef}>
+        <cylinderGeometry args={bgGeometryArgs} />
+        <meshBasicMaterial side={THREE.BackSide} color={bgColor} toneMapped={false} />
+      </mesh>
+
+      {/* Image/video cylinder */}
+      <mesh ref={meshRef}>
+        <cylinderGeometry args={geometryArgs} />
+        <meshBasicMaterial
+          side={THREE.BackSide}
+          map={texture}
+          color={texture ? undefined : '#111118'}
+          toneMapped={false}
+          key={texture?.uuid || 'no-tex'}
+        />
+      </mesh>
+    </group>
   );
 }

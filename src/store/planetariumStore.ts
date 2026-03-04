@@ -21,7 +21,10 @@ interface PlanetariumState {
   // Settings
   distance: number;
   screenSize: number;
+  screenHeight: number;    // cylinder height multiplier: 0.5 to 4
   curveAmount: number;
+  bgColor: string;         // background color for extended height
+  stretchToFill: boolean;  // distort image to fill height
 
   // UI
   showPlaylist: boolean;
@@ -41,7 +44,10 @@ interface PlanetariumState {
   setVolume: (v: number) => void;
   setDistance: (d: number) => void;
   setScreenSize: (s: number) => void;
+  setScreenHeight: (h: number) => void;
   setCurveAmount: (c: number) => void;
+  setBgColor: (c: string) => void;
+  setStretchToFill: (v: boolean) => void;
   resetSettings: () => void;
   togglePlaylist: () => void;
   toggleSettings: () => void;
@@ -53,7 +59,10 @@ let idCounter = 0;
 const DEFAULT_SETTINGS = {
   distance: 0,
   screenSize: 1,
+  screenHeight: 1,
   curveAmount: 180,
+  bgColor: '#000000',
+  stretchToFill: false,
 };
 
 export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
@@ -159,7 +168,10 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   setVolume: (v) => set({ volume: v }),
   setDistance: (d) => set({ distance: d }),
   setScreenSize: (s) => set({ screenSize: s }),
+  setScreenHeight: (h) => set({ screenHeight: h }),
   setCurveAmount: (c) => set({ curveAmount: c }),
+  setBgColor: (c) => set({ bgColor: c }),
+  setStretchToFill: (v) => set({ stretchToFill: v }),
   resetSettings: () => set(DEFAULT_SETTINGS),
   togglePlaylist: () => set((s) => ({ showPlaylist: !s.showPlaylist })),
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
