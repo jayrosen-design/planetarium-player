@@ -6,8 +6,8 @@ The player projects slides and interactive websites onto a curved dome surface, 
 
 ## Screenshots
 
-### Full Interface — Media Library, Live Website Embed & Projection Controls
-![Full UI with panels open](public/screenshots/full-ui.png)
+### Title Slide — Preserving Natural Skies
+![Title slide projected on dome](public/screenshots/slide-title.png)
 
 ### Presenter Bio
 ![Jay Rosen bio slide](public/screenshots/slide-bio.png)
@@ -29,6 +29,9 @@ The player projects slides and interactive websites onto a curved dome surface, 
 
 ### Dark Sky Certification Requirements & Progress
 ![Certification requirements slide](public/screenshots/slide-certification.png)
+
+### Full Interface — Media Library, Live Website Embed & Projection Controls
+![Full UI with panels open](public/screenshots/full-ui.png)
 
 ## Features
 
