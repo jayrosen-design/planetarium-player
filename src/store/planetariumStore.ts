@@ -3,8 +3,9 @@ import { create } from 'zustand';
 export interface MediaItem {
   id: string;
   filename: string;
-  type: 'video' | 'image';
+  type: 'video' | 'image' | 'website';
   blobUrl: string;
+  url?: string;
   duration?: number;
   thumbnailUrl?: string;
 }

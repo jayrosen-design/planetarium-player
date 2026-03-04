@@ -1,4 +1,4 @@
-import { X, Plus, Trash2, Film, ImageIcon, Upload } from 'lucide-react';
+import { X, Plus, Trash2, Film, ImageIcon, Upload, Globe } from 'lucide-react';
 import { usePlanetariumStore } from '@/store/planetariumStore';
 import { useRef, useCallback, useState } from 'react';
 
@@ -121,6 +121,8 @@ export function PlaylistPanel() {
                     <img src={item.thumbnailUrl} alt="" className="w-full h-full object-cover" />
                   ) : item.type === 'video' ? (
                     <Film className="w-4 h-4 text-primary/60" />
+                  ) : item.type === 'website' ? (
+                    <Globe className="w-4 h-4 text-green-400/60" />
                   ) : (
                     <ImageIcon className="w-4 h-4 text-accent/60" />
                   )}
@@ -132,7 +134,7 @@ export function PlaylistPanel() {
                     {item.filename}
                   </div>
                   <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
-                    {item.type === 'video' ? formatDuration(item.duration) : 'Image'}
+                    {item.type === 'video' ? formatDuration(item.duration) : item.type === 'website' ? 'Website' : 'Image'}
                   </div>
                 </div>
 
