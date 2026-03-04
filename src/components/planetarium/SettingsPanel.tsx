@@ -27,6 +27,8 @@ export function SettingsPanel() {
   const setStretchToFill = usePlanetariumStore((s) => s.setStretchToFill);
   const screenRotation = usePlanetariumStore((s) => s.screenRotation);
   const setScreenRotation = usePlanetariumStore((s) => s.setScreenRotation);
+  const screenTilt = usePlanetariumStore((s) => s.screenTilt);
+  const setScreenTilt = usePlanetariumStore((s) => s.setScreenTilt);
   const resetSettings = usePlanetariumStore((s) => s.resetSettings);
 
   if (!showSettings) return null;
@@ -150,6 +152,18 @@ export function SettingsPanel() {
           <Slider value={[screenRotation]} onValueChange={([v]) => setScreenRotation(v)} min={-180} max={180} step={1} />
           <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
             <span>-180°</span><span>0°</span><span>180°</span>
+          </div>
+        </div>
+
+        {/* Screen Tilt (X-axis) */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-baseline">
+            <span className="text-xs font-medium text-foreground/80">Screen Tilt</span>
+            <span className="text-xs font-mono text-primary glow-text">{screenTilt}°</span>
+          </div>
+          <Slider value={[screenTilt]} onValueChange={([v]) => setScreenTilt(v)} min={-90} max={90} step={1} />
+          <div className="flex justify-between text-[10px] text-muted-foreground font-mono">
+            <span>-90°</span><span>0°</span><span>90°</span>
           </div>
         </div>
       </div>
