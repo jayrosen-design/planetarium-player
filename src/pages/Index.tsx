@@ -3,6 +3,7 @@ import { PlanetariumScene } from '@/components/planetarium/PlanetariumScene';
 import { MediaBar } from '@/components/planetarium/MediaBar';
 import { SettingsPanel } from '@/components/planetarium/SettingsPanel';
 import { PlaylistPanel } from '@/components/planetarium/PlaylistPanel';
+import { WebsiteOverlay } from '@/components/planetarium/WebsiteOverlay';
 import { pdfSlides } from '@/data/pdfSlides';
 import { usePlanetariumStore } from '@/store/planetariumStore';
 
@@ -42,7 +43,8 @@ const Index = () => {
   useEffect(() => {
     if (playlist.length === 0) {
       loadSlides(pdfSlides);
-      // Auto-start playing after loading
+      // Start at first slide (index 1, after the website item)
+      usePlanetariumStore.getState().setActiveIndex(1);
       setTimeout(() => {
         usePlanetariumStore.getState().setIsPlaying(true);
       }, 500);
@@ -52,6 +54,7 @@ const Index = () => {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background select-none">
       <PlanetariumScene />
+      <WebsiteOverlay />
       <PlaylistPanel />
       <SettingsPanel />
       <MediaBar />

@@ -34,7 +34,15 @@ import page32 from '@/assets/slides/page_32.jpg';
 
 import { MediaItem } from '@/store/planetariumStore';
 
-export const pdfSlides: MediaItem[] = [
+const websiteItem: MediaItem = {
+  id: 'website-dark-sky',
+  filename: 'Dark Sky Simulator',
+  type: 'website',
+  blobUrl: '',
+  url: 'https://dark-sky-simulator.lovable.app/',
+};
+
+const slideItems: MediaItem[] = [
   page01, page02, page03, page04, page05, page06, page07, page08,
   page09, page10, page11, page12, page13, page14, page15, page16,
   page17, page18, page19, page20, page21, page22, page23, page24,
@@ -45,3 +53,5 @@ export const pdfSlides: MediaItem[] = [
   type: 'image' as const,
   blobUrl: url,
 }));
+
+export const pdfSlides: MediaItem[] = [websiteItem, ...slideItems];
