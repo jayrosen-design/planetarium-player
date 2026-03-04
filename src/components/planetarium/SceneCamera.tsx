@@ -1,13 +1,35 @@
+import { useRef, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import { usePlanetariumStore } from '@/store/planetariumStore';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
 export function SceneCamera() {
-  const { camera } = useThree();
+  const controlsRef = useRef<OrbitControlsImpl>(null);
   const distance = usePlanetariumStore((s) => s.distance);
 
-  useFrame(() => {
+  useEffect(() => {
+    if (controlsRef.current) {
+      controlsRef.current.target.set(0, 0, -5);
+      controlsRef.current.update();
+    }
+  }, []);
+
+  useFrame(({ camera }) => {
     camera.position.z = distance;
+    if (controlsRef.current) {
+      controlsRef.current.target.z = distance - 5;
+    }
   });
 
-  return null;
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={false}
+      enablePan={false}
+      rotateSpeed={0.5}
+      dampingFactor={0.1}
+      enableDamping
+    />
+  );
 }
