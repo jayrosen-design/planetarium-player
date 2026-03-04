@@ -29,6 +29,7 @@ interface PlanetariumState {
 
   // Actions
   addFiles: (files: File[]) => void;
+  loadSlides: (items: MediaItem[]) => void;
   removeItem: (id: string) => void;
   setActiveIndex: (index: number) => void;
   nextTrack: () => void;
@@ -116,6 +117,15 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
     const wasEmpty = state.playlist.length === 0;
     set({
       playlist: [...state.playlist, ...newItems],
+      activeIndex: wasEmpty ? 0 : state.activeIndex,
+    });
+  },
+
+  loadSlides: (items) => {
+    const state = get();
+    const wasEmpty = state.playlist.length === 0;
+    set({
+      playlist: [...state.playlist, ...items],
       activeIndex: wasEmpty ? 0 : state.activeIndex,
     });
   },

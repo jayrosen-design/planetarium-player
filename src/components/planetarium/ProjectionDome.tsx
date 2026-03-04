@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { usePlanetariumStore } from '@/store/planetariumStore';
@@ -6,7 +6,7 @@ import { usePlanetariumStore } from '@/store/planetariumStore';
 export function ProjectionDome() {
   const meshRef = useRef<THREE.Mesh>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const textureRef = useRef<THREE.Texture | null>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   const playlist = usePlanetariumStore((s) => s.playlist);
   const activeIndex = usePlanetariumStore((s) => s.activeIndex);
@@ -20,21 +20,22 @@ export function ProjectionDome() {
 
   const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
   const thetaLength = (curveAmount / 360) * Math.PI * 2;
-  const thetaStart = -thetaLength / 2 + Math.PI; // center the projection
+  const thetaStart = -thetaLength / 2 + Math.PI;
 
-  // Cylinder geometry args: [radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength]
   const geometryArgs = useMemo<[number, number, number, number, number, boolean, number, number]>(() => {
     const radius = 10;
     return [radius, radius, 8, 64, 1, true, thetaStart, thetaLength];
   }, [thetaStart, thetaLength]);
 
-  // Create/manage video element
+  // Load texture when active item changes
   useEffect(() => {
+    // Cleanup previous texture
+    if (texture) {
+      texture.dispose();
+      setTexture(null);
+    }
+
     if (!activeItem) {
-      if (textureRef.current) {
-        textureRef.current.dispose();
-        textureRef.current = null;
-      }
       if (videoRef.current) {
         videoRef.current.pause();
         videoRef.current.src = '';
@@ -65,31 +66,28 @@ export function ProjectionDome() {
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.repeat.x = -1;
       tex.offset.x = 1;
-
-      if (textureRef.current) textureRef.current.dispose();
-      textureRef.current = tex;
+      setTexture(tex);
     } else {
-      // Image
-      const loader = new THREE.TextureLoader();
-      loader.load(activeItem.blobUrl, (tex) => {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.repeat.x = -1;
-        tex.offset.x = 1;
-        if (textureRef.current) textureRef.current.dispose();
-        textureRef.current = tex;
-        setDuration(0);
-        setIsPlaying(false);
-      });
-
+      // Image - use an Image element for reliable loading
       if (videoRef.current) {
         videoRef.current.pause();
         videoRef.current.src = '';
       }
-    }
 
-    return () => {
-      // cleanup handled by next effect run
-    };
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const tex = new THREE.Texture(img);
+        tex.needsUpdate = true;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.repeat.x = -1;
+        tex.offset.x = 1;
+        tex.wrapS = THREE.RepeatWrapping;
+        setTexture(tex);
+        setDuration(0);
+      };
+      img.src = activeItem.blobUrl;
+    }
   }, [activeItem?.id, activeItem?.blobUrl]);
 
   // Play/pause sync
@@ -110,7 +108,7 @@ export function ProjectionDome() {
     if (video) video.volume = volume;
   }, [volume]);
 
-  // Update current time
+  // Update current time & scale
   useFrame(() => {
     const video = videoRef.current;
     if (video && activeItem?.type === 'video' && !video.paused) {
@@ -130,27 +128,16 @@ export function ProjectionDome() {
     };
   }, [activeItem?.id]);
 
-  if (!activeItem) {
-    return (
-      <mesh ref={meshRef}>
-        <cylinderGeometry args={geometryArgs} />
-        <meshBasicMaterial side={THREE.BackSide} color="#111118" />
-      </mesh>
-    );
-  }
-
   return (
     <mesh ref={meshRef}>
       <cylinderGeometry args={geometryArgs} />
-      {textureRef.current ? (
-        <meshBasicMaterial
-          side={THREE.BackSide}
-          map={textureRef.current}
-          toneMapped={false}
-        />
-      ) : (
-        <meshBasicMaterial side={THREE.BackSide} color="#111118" />
-      )}
+      <meshBasicMaterial
+        side={THREE.BackSide}
+        map={texture}
+        color={texture ? undefined : '#111118'}
+        toneMapped={false}
+        key={texture?.uuid || 'no-tex'}
+      />
     </mesh>
   );
 }
