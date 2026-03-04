@@ -24,7 +24,8 @@ interface PlanetariumState {
   screenHeight: number;    // cylinder height multiplier: 0.5 to 4
   curveAmount: number;
   bgColor: string;         // background color for extended height
-  stretchToFill: boolean;  // distort image to fill height
+  stretchToFill: boolean;
+  screenRotation: number;  // degrees: -180 to 180
 
   // UI
   showPlaylist: boolean;
@@ -48,6 +49,7 @@ interface PlanetariumState {
   setCurveAmount: (c: number) => void;
   setBgColor: (c: string) => void;
   setStretchToFill: (v: boolean) => void;
+  setScreenRotation: (r: number) => void;
   resetSettings: () => void;
   togglePlaylist: () => void;
   toggleSettings: () => void;
@@ -63,6 +65,7 @@ const DEFAULT_SETTINGS = {
   curveAmount: 180,
   bgColor: '#000000',
   stretchToFill: false,
+  screenRotation: 0,
 };
 
 export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
@@ -172,6 +175,7 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
   setCurveAmount: (c) => set({ curveAmount: c }),
   setBgColor: (c) => set({ bgColor: c }),
   setStretchToFill: (v) => set({ stretchToFill: v }),
+  setScreenRotation: (r) => set({ screenRotation: r }),
   resetSettings: () => set(DEFAULT_SETTINGS),
   togglePlaylist: () => set((s) => ({ showPlaylist: !s.showPlaylist })),
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
