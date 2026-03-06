@@ -3,7 +3,7 @@ import { Html } from '@react-three/drei';
 import { dsoPhotoMap } from '@/data/dsoPhotos';
 
 function hasDsoPhoto(itemId: string): boolean {
-  const match = itemId.match(/^dso-(M\d+|C\d+)$/);
+  const match = itemId.match(/^dso-(.+)$/);
   return match ? !!dsoPhotoMap[match[1]] : false;
 }
 

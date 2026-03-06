@@ -744,6 +744,68 @@
                 currentObjectGroup.add(mesh);
             }
 
+            // --- Multi-DSO Loader (side by side) ---
+            function loadMultiDSO(dsoObjs) {
+                // Clean current scene
+                while(currentObjectGroup.children.length > 0) {
+                    const child = currentObjectGroup.children[0];
+                    if(child.geometry) child.geometry.dispose();
+                    if(child.material) child.material.dispose();
+                    currentObjectGroup.remove(child);
+                }
+
+                const names = dsoObjs.map(d => d.name || d.id).join(' & ');
+                const types = [...new Set(dsoObjs.map(d => d.type.toUpperCase()))].join(' / ');
+                document.getElementById('info-type').innerText = `Type: ${types}`;
+                document.getElementById('info-desc').innerText = dsoObjs.map(d => d.desc).join(' | ');
+                
+                currentObjectGroup.rotation.set(0,0,0);
+
+                const spacing = 12;
+                const totalWidth = spacing * (dsoObjs.length - 1);
+                const startX = -totalWidth / 2;
+
+                dsoObjs.forEach((dsoObj, i) => {
+                    const subGroup = new THREE.Group();
+                    subGroup.position.x = startX + i * spacing;
+
+                    let mesh;
+                    switch(dsoObj.type) {
+                        case 'spiral':
+                            mesh = generateSpiral(dsoObj.id, { colorIn: '#ffd0a0', colorOut: '#4070ff' });
+                            break;
+                        case 'edge-on':
+                            mesh = generateSpiral(dsoObj.id, { colorIn: '#ffddbb', colorOut: '#ddaa88', flatten: true });
+                            subGroup.rotation.z = Math.PI / 2.2;
+                            break;
+                        case 'elliptical':
+                            mesh = generateElliptical(dsoObj.id);
+                            break;
+                        case 'globular':
+                            mesh = generateCluster(dsoObj.id, true);
+                            break;
+                        case 'open':
+                            mesh = generateCluster(dsoObj.id, false);
+                            break;
+                        case 'planetary':
+                            mesh = generatePlanetaryNebula(dsoObj.id);
+                            break;
+                        case 'snr':
+                            mesh = generateDiffuseNebula(dsoObj.id, true);
+                            break;
+                        case 'diffuse':
+                        default:
+                            mesh = generateDiffuseNebula(dsoObj.id, false);
+                            const embeddedStars = generateCluster(dsoObj.id, false);
+                            embeddedStars.scale.set(0.5,0.5,0.5);
+                            subGroup.add(embeddedStars);
+                            break;
+                    }
+                    subGroup.add(mesh);
+                    currentObjectGroup.add(subGroup);
+                });
+            }
+
             // --- Background Starfield ---
             const bgGeometry = new THREE.BufferGeometry();
             const bgPositions = new Float32Array(3000 * 3);
@@ -777,13 +839,20 @@
                 loadDSO(dso);
             });
 
-            // Initial Load - support hash-based DSO selection
+            // Initial Load - support hash-based DSO selection (including multi-DSO like M81+M82)
             const hashId = window.location.hash.replace('#', '');
-            const initialDSO = hashId ? dsoCatalog.find(d => d.id === hashId) || dsoCatalog[0] : dsoCatalog[0];
+            const hashIds = hashId.includes('+') ? hashId.split('+') : [hashId];
+            const initialDSOs = hashIds.map(id => dsoCatalog.find(d => d.id === id)).filter(Boolean);
+            const initialDSO = initialDSOs.length > 0 ? initialDSOs[0] : dsoCatalog[0];
             if (hashId && initialDSO) {
                 selectEl.value = initialDSO.id;
             }
-            loadDSO(initialDSO);
+            // Load multiple DSOs side by side
+            if (initialDSOs.length > 1) {
+                loadMultiDSO(initialDSOs);
+            } else {
+                loadDSO(initialDSO);
+            }
 
             // Controls logic
             let timeMultiplier = 1.0;
