@@ -1,5 +1,5 @@
 import { usePlanetariumStore } from '@/store/planetariumStore';
-import { Html } from '@react-three/drei';
+import { Html, Billboard } from '@react-three/drei';
 import { dsoPhotoMap } from '@/data/dsoPhotos';
 import { useState } from 'react';
 
@@ -74,106 +74,125 @@ export function AstroPhotoDome() {
   // Position: standalone = centered, companion = offset right of the simulation
   const xOffset = isStandalone ? 0 : (iframeWidth * 0.52) / 2 + 10;
 
-  return (
-    <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
-      <Html
-        transform
-        position={[isStandalone ? 0 : xOffset * uniformScale * 0.04, 0, -radius + 0.2]}
-        scale={uniformScale}
-        occlude={false}
+  const panel = (
+    <Html
+      transform
+      position={isStandalone ? [0, 0, -radius + 0.2] : [0, 0, 0]}
+      scale={uniformScale}
+      occlude={false}
+      style={{
+        width: `${panelWidth}px`,
+        height: `${panelHeight}px`,
+        borderRadius: '12px',
+        overflow: 'hidden',
+        pointerEvents: 'auto',
+      }}
+    >
+      <div
         style={{
-          width: `${panelWidth}px`,
-          height: `${panelHeight}px`,
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
           borderRadius: '12px',
-          overflow: 'hidden',
-          pointerEvents: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
         }}
       >
-        <div
+        <img
+          src={imageUrl}
+          alt={imageTitle}
           style={{
             width: '100%',
             height: '100%',
-            background: 'transparent',
+            objectFit: 'contain',
             borderRadius: '12px',
+          }}
+        />
+        {/* Title + navigation */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '20px 16px 12px',
+            background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
             display: 'flex',
-            flexDirection: 'column',
-            position: 'relative',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
           }}
         >
-          <img
-            src={imageUrl}
-            alt={imageTitle}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              borderRadius: '12px',
-            }}
-          />
-          {/* Title + navigation */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              padding: '20px 16px 12px',
-              background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px',
-            }}
-          >
-            <span style={{ color: '#ccc', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
-              {imageTitle}
-            </span>
-            {photos.length > 1 && (
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <button
-                  onClick={() => setPhotoIdx((photoIdx - 1 + photos.length) % photos.length)}
-                  style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    color: '#ccc',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  ‹
-                </button>
-                <span style={{ color: '#888', fontSize: '11px' }}>
-                  {(photoIdx % photos.length) + 1}/{photos.length}
-                </span>
-                <button
-                  onClick={() => setPhotoIdx((photoIdx + 1) % photos.length)}
-                  style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    color: '#ccc',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  ›
-                </button>
-              </div>
-            )}
-          </div>
+          <span style={{ color: '#ccc', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
+            {imageTitle}
+          </span>
+          {photos.length > 1 && (
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <button
+                onClick={() => setPhotoIdx((photoIdx - 1 + photos.length) % photos.length)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  color: '#ccc',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ‹
+              </button>
+              <span style={{ color: '#888', fontSize: '11px' }}>
+                {(photoIdx % photos.length) + 1}/{photos.length}
+              </span>
+              <button
+                onClick={() => setPhotoIdx((photoIdx + 1) % photos.length)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  color: '#ccc',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
-      </Html>
-    </group>
+      </div>
+    </Html>
+  );
+
+  if (isStandalone) {
+    return (
+      <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
+        {panel}
+      </group>
+    );
+  }
+
+  // Companion mode: billboard so it always faces the camera
+  return (
+    <Billboard
+      follow
+      lockX={false}
+      lockY={false}
+      lockZ={false}
+      position={[xOffset * uniformScale * 0.04, 0, -radius + 0.2]}
+    >
+      {panel}
+    </Billboard>
   );
 }
