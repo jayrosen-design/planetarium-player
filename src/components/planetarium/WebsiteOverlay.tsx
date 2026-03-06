@@ -52,6 +52,7 @@ export function WebsiteDome() {
           borderRadius: '12px',
           overflow: 'hidden',
           pointerEvents: 'auto',
+          background: 'transparent',
         }}
       >
         <iframe
