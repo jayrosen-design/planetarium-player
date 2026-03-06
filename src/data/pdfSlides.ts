@@ -214,4 +214,4 @@ const slideItems: MediaItem[] = [
   folder: 'Preserving Natural Skies',
 }));
 
-export const pdfSlides: MediaItem[] = [astroApertureItem, websiteItem, exoskyItem, ...dsoItems, ...slideItems];
+export const pdfSlides: MediaItem[] = [...dsoItems, ...slideItems, astroApertureItem, websiteItem, exoskyItem];
