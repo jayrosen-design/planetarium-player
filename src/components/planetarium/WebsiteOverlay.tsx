@@ -43,6 +43,7 @@ export function WebsiteDome() {
         }}
       >
         <iframe
+          key={activeItem.id}
           id="planetarium-website-iframe"
           src={activeItem.url}
           style={{
