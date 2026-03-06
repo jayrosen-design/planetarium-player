@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePlanetariumStore } from '@/store/planetariumStore';
 import { useDsoPhotos } from '@/hooks/useAstroPhotos';
 import { Camera, ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react';
@@ -31,12 +31,14 @@ export function AstroPhotoPanel() {
   const { data: photos, isLoading } = useDsoPhotos(dsoInfo?.dsoId ?? null, dsoType);
 
   // Reset photo index when DSO changes
-  const [lastDsoId, setLastDsoId] = useState<string | null>(null);
-  if (dsoInfo?.dsoId !== lastDsoId) {
-    setLastDsoId(dsoInfo?.dsoId ?? null);
-    setPhotoIndex(0);
-    setDismissed(false);
-  }
+  const prevDsoId = useRef<string | null>(null);
+  useEffect(() => {
+    if (dsoInfo?.dsoId !== prevDsoId.current) {
+      prevDsoId.current = dsoInfo?.dsoId ?? null;
+      setPhotoIndex(0);
+      setDismissed(false);
+    }
+  }, [dsoInfo?.dsoId]);
 
   if (!dsoInfo || dismissed) return null;
   if (isLoading) {
