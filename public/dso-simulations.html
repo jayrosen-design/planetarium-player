@@ -48,6 +48,67 @@
             max-height: calc(100vh - 48px);
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        #ui-panel.collapsed {
+            top: auto;
+            bottom: 16px;
+            left: 16px;
+            width: auto;
+            padding: 8px 16px;
+            border-radius: 24px;
+            max-height: none;
+        }
+
+        #ui-panel.collapsed .panel-content {
+            display: none;
+        }
+
+        #ui-panel.collapsed .panel-header h1 {
+            font-size: 12px;
+            margin: 0;
+        }
+
+        #ui-panel.collapsed .panel-header .subtitle {
+            display: none;
+        }
+
+        .panel-header {
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        #panel-toggle {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            pointer-events: auto;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        #panel-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #ui-panel.collapsed #panel-toggle {
+            position: static;
+            margin-left: 8px;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
         }
 
         .ui-element {
@@ -59,6 +120,7 @@
             font-size: 22px;
             font-weight: 600;
             letter-spacing: 0.5px;
+            transition: font-size 0.3s;
         }
 
         .subtitle {
@@ -197,28 +259,33 @@
     <div id="loading">Synthesizing Cosmos...</div>
 
     <div id="ui-panel">
-        <h1>Celestial Catalog</h1>
-        <p class="subtitle">Procedurally Generated Deep Sky Objects</p>
-
-        <div class="dso-selector-group ui-element">
-            <select id="dsoSelect"></select>
+        <div class="panel-header" onclick="togglePanel()">
+            <h1>Celestial Catalog</h1>
+            <p class="subtitle">Procedurally Generated Deep Sky Objects</p>
         </div>
-        
-        <div class="dso-info">
-            <span id="info-type">Type: Spiral Galaxy</span>
-            <span id="info-desc">A description of the object will appear here.</span>
-        </div>
+        <button id="panel-toggle" onclick="event.stopPropagation(); togglePanel()">−</button>
 
-        <div class="control-group ui-element">
-            <label for="speedSlider">
-                <span>Time Dilation</span>
-                <span id="speedValue">1.0x</span>
-            </label>
-            <input type="range" id="speedSlider" min="0" max="3" step="0.1" value="1.0">
-        </div>
+        <div class="panel-content">
+            <div class="dso-selector-group ui-element">
+                <select id="dsoSelect"></select>
+            </div>
+            
+            <div class="dso-info">
+                <span id="info-type">Type: Spiral Galaxy</span>
+                <span id="info-desc">A description of the object will appear here.</span>
+            </div>
 
-        <div class="control-group ui-element">
-            <button id="toggleAutoRotate" class="active">Auto-Pan Camera: ON</button>
+            <div class="control-group ui-element">
+                <label for="speedSlider">
+                    <span>Time Dilation</span>
+                    <span id="speedValue">1.0x</span>
+                </label>
+                <input type="range" id="speedSlider" min="0" max="3" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group ui-element">
+                <button id="toggleAutoRotate" class="active">Auto-Pan Camera: ON</button>
+            </div>
         </div>
     </div>
 
@@ -228,7 +295,14 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
-        // --- DSO Database mapped from uploaded CSV ---
+        function togglePanel() {
+            document.getElementById('ui-panel').classList.toggle('collapsed');
+            const btn = document.getElementById('panel-toggle');
+            btn.textContent = document.getElementById('ui-panel').classList.contains('collapsed') ? '+' : '−';
+        }
+    </script>
+
+    <script>
         // Categories: spiral, edge-on, elliptical, globular, open, planetary, diffuse, snr
         const dsoCatalog = [
             { id: 'M1', name: 'Crab Nebula', type: 'snr', desc: 'A rapidly expanding supernova remnant and pulsar wind nebula.' },
