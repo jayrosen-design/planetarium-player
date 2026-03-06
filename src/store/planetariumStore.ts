@@ -8,6 +8,7 @@ export interface MediaItem {
   url?: string;
   duration?: number;
   thumbnailUrl?: string;
+  folder?: string;
 }
 
 interface PlanetariumState {

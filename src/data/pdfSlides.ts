@@ -134,6 +134,7 @@ const dsoItems: MediaItem[] = dsoCatalog.map((dso) => ({
   type: 'website' as const,
   blobUrl: '',
   url: `/dso-simulations.html#${dso.id}`,
+  folder: 'Catalogs',
 }));
 
 const slideItems: MediaItem[] = [
@@ -146,6 +147,7 @@ const slideItems: MediaItem[] = [
   filename: `Slide ${i + 1} of 32`,
   type: 'image' as const,
   blobUrl: url,
+  folder: 'Preserving Natural Skies',
 }));
 
 export const pdfSlides: MediaItem[] = [astroApertureItem, websiteItem, exoskyItem, ...dsoItems, ...slideItems];
