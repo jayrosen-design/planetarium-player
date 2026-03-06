@@ -93,7 +93,7 @@ export function AstroPhotoDome() {
           style={{
             width: '100%',
             height: '100%',
-            background: '#030308',
+            background: 'transparent',
             borderRadius: '12px',
             display: 'flex',
             flexDirection: 'column',
