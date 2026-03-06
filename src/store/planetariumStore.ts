@@ -164,7 +164,17 @@ export const usePlanetariumStore = create<PlanetariumState>((set, get) => ({
     set({ playlist: newPlaylist, activeIndex: newIndex });
   },
 
-  setActiveIndex: (index) => set({ activeIndex: index, currentTime: 0, isPlaying: false }),
+  setActiveIndex: (index) => {
+    const { playlist } = get();
+    const item = index >= 0 && index < playlist.length ? playlist[index] : null;
+    // Apply type-specific settings: catalog/website items get tighter view
+    if (item?.type === 'website') {
+      set({ activeIndex: index, currentTime: 0, isPlaying: false, screenHeight: 1.5, distance: -1.9 });
+    } else {
+      // Restore default settings for slides/images
+      set({ activeIndex: index, currentTime: 0, isPlaying: false, screenHeight: DEFAULT_SETTINGS.screenHeight, distance: DEFAULT_SETTINGS.distance });
+    }
+  },
   nextTrack: () => {
     const { playlist, activeIndex } = get();
     if (playlist.length === 0) return;
