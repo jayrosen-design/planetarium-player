@@ -50,6 +50,14 @@ export function MediaBar() {
   const handleFullscreen = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen();
+    } else if (activeItem?.type === 'website') {
+      // For websites, fullscreen the iframe directly
+      const iframe = document.getElementById('planetarium-website-iframe') as HTMLIFrameElement | null;
+      if (iframe) {
+        iframe.requestFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
     } else {
       document.documentElement.requestFullscreen();
     }
