@@ -49,8 +49,14 @@ export function PlaylistPanel() {
       }
     });
 
+    const folderOrder = ['Astrophotography', 'Catalogs', 'Preserving Natural Skies'];
     const folders: PlaylistFolder[] = [];
     folderMap.forEach((items, name) => folders.push({ name, items }));
+    folders.sort((a, b) => {
+      const ai = folderOrder.indexOf(a.name);
+      const bi = folderOrder.indexOf(b.name);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
 
     return { ungrouped, folders };
   }, [playlist]);
@@ -188,10 +194,7 @@ export function PlaylistPanel() {
           </div>
         ) : (
           <>
-            {/* Ungrouped items */}
-            {ungrouped.map(({ item, index }) => renderItem(item, index))}
-
-            {/* Folder groups */}
+            {/* Folder groups first */}
             {folders.map((folder) => {
               const isExpanded = expandedFolders.has(folder.name);
               const hasActiveItem = folder.items.some(({ index }) => index === activeIndex);
@@ -227,6 +230,10 @@ export function PlaylistPanel() {
                 </div>
               );
             })}
+
+            {/* Ungrouped items after folders */}
+            {ungrouped.map(({ item, index }) => renderItem(item, index))}
+
           </>
         )}
       </div>

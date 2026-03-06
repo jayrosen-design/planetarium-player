@@ -1,4 +1,6 @@
 // Auto-import all slide images from the PDF
+import { dsoPhotoMap } from './dsoPhotos';
+import { MediaItem } from '@/store/planetariumStore';
 import page01 from '@/assets/slides/page_01.jpg';
 import page02 from '@/assets/slides/page_02.jpg';
 import page03 from '@/assets/slides/page_03.jpg';
@@ -31,8 +33,7 @@ import page29 from '@/assets/slides/page_29.jpg';
 import page30 from '@/assets/slides/page_30.jpg';
 import page31 from '@/assets/slides/page_31.jpg';
 import page32 from '@/assets/slides/page_32.jpg';
-
-import { MediaItem } from '@/store/planetariumStore';
+// MediaItem is imported at top
 
 const astroApertureItem: MediaItem = {
   id: 'website-astro-aperture',
@@ -214,4 +215,15 @@ const slideItems: MediaItem[] = [
   folder: 'Preserving Natural Skies',
 }));
 
-export const pdfSlides: MediaItem[] = [...dsoItems, ...slideItems, astroApertureItem, websiteItem, exoskyItem];
+// Astrophotography items from jayrosen.design gallery
+const astrophotoItems: MediaItem[] = Object.entries(dsoPhotoMap).flatMap(([dsoId, photos]) =>
+  photos.map((photo, i) => ({
+    id: `astro-${dsoId}-${i}`,
+    filename: photo.title,
+    type: 'image' as const,
+    blobUrl: photo.imageUrl,
+    folder: 'Astrophotography',
+  }))
+);
+
+export const pdfSlides: MediaItem[] = [...astrophotoItems, ...dsoItems, ...slideItems, astroApertureItem, websiteItem, exoskyItem];
