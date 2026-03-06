@@ -43,8 +43,10 @@ const Index = () => {
   useEffect(() => {
     if (playlist.length === 0) {
       loadSlides(pdfSlides);
-      // Start at first item (first DSO catalog entry)
-      usePlanetariumStore.getState().setActiveIndex(0);
+      // Start at M31 – Andromeda Galaxy
+      const m31Index = pdfSlides.findIndex((item) => item.id === 'dso-M31');
+      const store = usePlanetariumStore.getState();
+      store.setActiveIndex(m31Index >= 0 ? m31Index : 0);
     }
   }, []);
 
