@@ -42,6 +42,14 @@ const websiteItem: MediaItem = {
   url: 'https://dark-sky-simulator.lovable.app/',
 };
 
+const exoskyItem: MediaItem = {
+  id: 'website-exosky',
+  filename: 'Astraeus Rupertus',
+  type: 'website',
+  blobUrl: '',
+  url: 'https://html-classic.itch.zone/html/11787167/Exosky4/index.html',
+};
+
 const slideItems: MediaItem[] = [
   page01, page02, page03, page04, page05, page06, page07, page08,
   page09, page10, page11, page12, page13, page14, page15, page16,
@@ -54,4 +62,4 @@ const slideItems: MediaItem[] = [
   blobUrl: url,
 }));
 
-export const pdfSlides: MediaItem[] = [websiteItem, ...slideItems];
+export const pdfSlides: MediaItem[] = [websiteItem, exoskyItem, ...slideItems];
