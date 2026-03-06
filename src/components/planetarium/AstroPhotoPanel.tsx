@@ -1,17 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { usePlanetariumStore } from '@/store/planetariumStore';
-import { useDsoPhotos } from '@/hooks/useAstroPhotos';
-import { Camera, ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react';
+import { getDsoPhotos } from '@/hooks/useAstroPhotos';
+import { GALLERY_BASE_URL } from '@/data/dsoPhotos';
+import { Camera, ChevronLeft, ChevronRight, X, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 
-// Extract DSO ID and type from the active playlist item
-function parseDsoInfo(itemId: string, filename: string) {
+function parseDsoId(itemId: string): string | null {
   const match = itemId.match(/^dso-(M\d+|C\d+)$/);
-  if (!match) return null;
-  return { dsoId: match[1], name: filename };
+  return match ? match[1] : null;
 }
-
-// We need the DSO type from the catalog — import it
-import { dsoCatalog } from '@/data/pdfSlides';
 
 export function AstroPhotoPanel() {
   const playlist = usePlanetariumStore((s) => s.playlist);
@@ -22,37 +18,20 @@ export function AstroPhotoPanel() {
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  const dsoInfo = activeItem ? parseDsoInfo(activeItem.id, activeItem.filename) : null;
+  const dsoId = activeItem ? parseDsoId(activeItem.id) : null;
+  const photos = getDsoPhotos(dsoId);
 
-  // Find the DSO type from our catalog
-  const catalogEntry = dsoInfo ? dsoCatalog.find((d) => d.id === dsoInfo.dsoId) : null;
-  const dsoType = catalogEntry?.type;
-
-  const { data: photos, isLoading } = useDsoPhotos(dsoInfo?.dsoId ?? null, dsoType);
-
-  // Reset photo index when DSO changes
+  // Reset when DSO changes
   const prevDsoId = useRef<string | null>(null);
   useEffect(() => {
-    if (dsoInfo?.dsoId !== prevDsoId.current) {
-      prevDsoId.current = dsoInfo?.dsoId ?? null;
+    if (dsoId !== prevDsoId.current) {
+      prevDsoId.current = dsoId;
       setPhotoIndex(0);
       setDismissed(false);
     }
-  }, [dsoInfo?.dsoId]);
+  }, [dsoId]);
 
-  if (!dsoInfo || dismissed) return null;
-  if (isLoading) {
-    return (
-      <div className={`absolute ${expanded ? 'inset-4' : 'top-4 right-4 w-80'} z-30 glass-panel-heavy rounded-xl p-3 transition-all`}>
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
-          <Camera className="w-3.5 h-3.5 animate-pulse" />
-          <span>Loading astrophotography…</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!photos || photos.length === 0) return null;
+  if (!dsoId || dismissed || photos.length === 0) return null;
 
   const photo = photos[photoIndex % photos.length];
   const total = photos.length;
@@ -60,9 +39,7 @@ export function AstroPhotoPanel() {
   return (
     <div
       className={`absolute z-30 transition-all duration-300 ${
-        expanded
-          ? 'inset-4 bottom-24'
-          : 'top-4 right-4 w-80'
+        expanded ? 'inset-4 bottom-24' : 'top-4 right-4 w-80'
       }`}
     >
       <div className="glass-panel-heavy glow-border-cyan rounded-xl overflow-hidden h-full flex flex-col">
@@ -73,9 +50,20 @@ export function AstroPhotoPanel() {
             <span className="text-xs font-medium truncate">{photo.title}</span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[10px] text-muted-foreground mr-1">
-              {photoIndex + 1}/{total}
-            </span>
+            {total > 1 && (
+              <span className="text-[10px] text-muted-foreground mr-1">
+                {photoIndex + 1}/{total}
+              </span>
+            )}
+            <a
+              href={`${GALLERY_BASE_URL}/${photo.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1 rounded hover:bg-secondary/60 text-muted-foreground hover:text-primary transition-colors"
+              title="View in gallery"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
             <button
               onClick={() => setExpanded(!expanded)}
               className="p-1 rounded hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
@@ -94,8 +82,8 @@ export function AstroPhotoPanel() {
         {/* Image */}
         <div className="relative flex-1 min-h-0 bg-black/40">
           <img
-            src={photo.sourceUrl}
-            alt={photo.altText}
+            src={photo.imageUrl}
+            alt={photo.title}
             className="w-full h-full object-contain"
             loading="lazy"
           />
@@ -117,18 +105,6 @@ export function AstroPhotoPanel() {
               </button>
             </>
           )}
-        </div>
-
-        {/* Footer with tags */}
-        <div className="px-3 py-1.5 flex items-center gap-1 flex-wrap">
-          {photo.tags.slice(0, 5).map((tag) => (
-            <span
-              key={tag}
-              className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary/60 text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
         </div>
       </div>
     </div>
