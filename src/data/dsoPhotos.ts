@@ -79,7 +79,10 @@ export const dsoPhotoMap: Record<string, AstroPhotoEntry[]> = {
   M63: [
     { title: 'Sunflower Galaxy (M63)', slug: 'sunflower-galaxy-m63', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_109_M-63_10.0s_LP_20250202-031001-rotated.jpg' },
   ],
-  'M65+M66': [
+  M65: [
+    { title: 'Leo Triplet (M65, M66, NGC 3628)', slug: 'leo-triplet-m65-m66-ngc-3628', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_49_mosaic_NGC-3628_10.0s_IRCUT_20250202-003507-rotated.jpg' },
+  ],
+  M66: [
     { title: 'Leo Triplet (M65, M66, NGC 3628)', slug: 'leo-triplet-m65-m66-ngc-3628', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_49_mosaic_NGC-3628_10.0s_IRCUT_20250202-003507-rotated.jpg' },
   ],
   M71: [
@@ -91,7 +94,10 @@ export const dsoPhotoMap: Record<string, AstroPhotoEntry[]> = {
   M80: [
     { title: 'M80', slug: 'm80', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_20_M-80_20.0s_IRCUT_20250427-000553-rotated.jpg' },
   ],
-  'M81+M82': [
+  M81: [
+    { title: "Bode's Galaxy & Cigar Galaxy (M81 & M82)", slug: 'bodes-galaxy-and-cigar-galaxy-m81-m82', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_63_M-81_20.0s_IRCUT_20250426-212004-1-rotated.jpg' },
+  ],
+  M82: [
     { title: "Bode's Galaxy & Cigar Galaxy (M81 & M82)", slug: 'bodes-galaxy-and-cigar-galaxy-m81-m82', imageUrl: 'https://jayrosen.design/wp-content/uploads/2025/05/Stacked_63_M-81_20.0s_IRCUT_20250426-212004-1-rotated.jpg' },
   ],
   M83: [

@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 /** Extract DSO ID from a playlist item id like "dso-M31" */
 function extractDsoId(itemId: string): string | null {
-  const match = itemId.match(/^dso-(.+)$/);
+  const match = itemId.match(/^dso-(M\d+|C\d+)$/);
   return match ? match[1] : null;
 }
 
