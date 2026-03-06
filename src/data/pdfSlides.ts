@@ -59,6 +59,14 @@ const exoskyItem: MediaItem = {
   url: 'https://html-classic.itch.zone/html/11787167/Exosky4/index.html',
 };
 
+const galacticHomeItem: MediaItem = {
+  id: 'website-galactic-home',
+  filename: 'Galactic Home',
+  type: 'website',
+  blobUrl: '',
+  url: 'https://galactic-home.vercel.app/',
+};
+
 // DSO Catalog - each links to the procedural three.js simulation
 export const dsoCatalog = [
   { id: 'M1', name: 'Crab Nebula', type: 'snr' },
@@ -234,4 +242,4 @@ const astrophotoItems: MediaItem[] = Object.entries(dsoPhotoMap).flatMap(([dsoId
   }))
 );
 
-export const pdfSlides: MediaItem[] = [...astrophotoItems, ...dsoItems, ...slideItems, astroApertureItem, websiteItem, exoskyItem];
+export const pdfSlides: MediaItem[] = [...astrophotoItems, ...dsoItems, ...slideItems, astroApertureItem, websiteItem, exoskyItem, galacticHomeItem];
