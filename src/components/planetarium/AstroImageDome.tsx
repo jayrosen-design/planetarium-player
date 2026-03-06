@@ -1,41 +1,180 @@
 import { usePlanetariumStore } from '@/store/planetariumStore';
+import { Html } from '@react-three/drei';
+import { dsoPhotoMap } from '@/data/dsoPhotos';
+import { useState } from 'react';
 
-/**
- * Renders astrophotography images as a full-screen HTML overlay
- * (outside the 3D canvas) similar to how the website iframe works,
- * but as a separate flat image panel.
- */
-export function AstroImageOverlay() {
-  const playlist = usePlanetariumStore((s) => s.playlist);
-  const activeIndex = usePlanetariumStore((s) => s.activeIndex);
-  const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
-
-  if (!activeItem || !isAstroItem(activeItem)) return null;
-
-  return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-      <div
-        className="relative w-[85vw] h-[80vh] max-w-[1400px] rounded-xl overflow-hidden pointer-events-auto glass-panel-heavy glow-border-cyan"
-        style={{ background: 'radial-gradient(ellipse at center, hsl(225 25% 6% / 0.95), hsl(225 25% 3% / 0.98))' }}
-      >
-        <img
-          src={activeItem.blobUrl}
-          alt={activeItem.filename}
-          className="w-full h-full object-contain"
-          crossOrigin="anonymous"
-        />
-        {/* Title overlay */}
-        <div
-          className="absolute bottom-0 left-0 right-0 px-5 py-4"
-          style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.8))' }}
-        >
-          <span className="text-sm font-medium text-foreground">{activeItem.filename}</span>
-        </div>
-      </div>
-    </div>
-  );
+/** Extract DSO ID from a playlist item id like "dso-M31" */
+function extractDsoId(itemId: string): string | null {
+  const match = itemId.match(/^dso-(M\d+|C\d+)$/);
+  return match ? match[1] : null;
 }
 
+/** Check if item is from the Astrophotography folder */
 export function isAstroItem(item: { id: string; folder?: string } | null) {
   return item?.folder === 'Astrophotography' || item?.id?.startsWith('astro-');
+}
+
+/**
+ * When a DSO catalog simulation is active and has matching astrophotography,
+ * renders the astrophoto as a second Html panel next to the simulation iframe.
+ */
+export function AstroPhotoDome() {
+  const playlist = usePlanetariumStore((s) => s.playlist);
+  const activeIndex = usePlanetariumStore((s) => s.activeIndex);
+  const screenSize = usePlanetariumStore((s) => s.screenSize);
+  const screenRotation = usePlanetariumStore((s) => s.screenRotation);
+  const screenTilt = usePlanetariumStore((s) => s.screenTilt);
+  const curveAmount = usePlanetariumStore((s) => s.curveAmount);
+  const screenHeight = usePlanetariumStore((s) => s.screenHeight);
+  const iframeWidth = usePlanetariumStore((s) => s.iframeWidth);
+  const iframeHeight = usePlanetariumStore((s) => s.iframeHeight);
+
+  const [photoIdx, setPhotoIdx] = useState(0);
+
+  const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
+  if (!activeItem) return null;
+
+  // Determine what image to show
+  let imageUrl: string | null = null;
+  let imageTitle = '';
+  let photos: { imageUrl: string; title: string }[] = [];
+  let isStandalone = false;
+
+  if (isAstroItem(activeItem)) {
+    // Standalone astrophotography item - show just the image
+    imageUrl = activeItem.blobUrl;
+    imageTitle = activeItem.filename;
+    isStandalone = true;
+  } else if (activeItem.type === 'website') {
+    // DSO catalog item - check for matching astrophoto
+    const dsoId = extractDsoId(activeItem.id);
+    if (dsoId && dsoPhotoMap[dsoId]) {
+      photos = dsoPhotoMap[dsoId];
+      const idx = photoIdx % photos.length;
+      imageUrl = photos[idx].imageUrl;
+      imageTitle = photos[idx].title;
+    }
+  }
+
+  if (!imageUrl) return null;
+
+  const radius = 10 * screenSize;
+  const thetaLength = (curveAmount / 360) * Math.PI * 2;
+  const arcWidth = radius * thetaLength;
+  const baseHeight = 8 * screenSize * screenHeight;
+
+  const scaleX = arcWidth / iframeWidth;
+  const scaleY = baseHeight / iframeHeight;
+  const uniformScale = Math.min(scaleX, scaleY) * 25;
+
+  // For standalone astro items, center the panel. For DSO companion, offset to the right.
+  const panelWidth = isStandalone ? iframeWidth : iframeWidth * 0.48;
+  const panelHeight = iframeHeight;
+
+  // Position: standalone = centered, companion = offset right of the simulation
+  const xOffset = isStandalone ? 0 : (iframeWidth * 0.52) / 2 + 10;
+
+  return (
+    <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
+      <Html
+        transform
+        position={[isStandalone ? 0 : xOffset * uniformScale * 0.04, 0, -radius + 0.2]}
+        scale={uniformScale}
+        occlude={false}
+        style={{
+          width: `${panelWidth}px`,
+          height: `${panelHeight}px`,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          pointerEvents: 'auto',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            background: '#030308',
+            borderRadius: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt={imageTitle}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              borderRadius: '12px',
+            }}
+            crossOrigin="anonymous"
+          />
+          {/* Title + navigation */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: '20px 16px 12px',
+              background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '8px',
+            }}
+          >
+            <span style={{ color: '#ccc', fontSize: '13px', fontFamily: "'Space Grotesk', sans-serif" }}>
+              {imageTitle}
+            </span>
+            {photos.length > 1 && (
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button
+                  onClick={() => setPhotoIdx((photoIdx - 1 + photos.length) % photos.length)}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    color: '#ccc',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ‹
+                </button>
+                <span style={{ color: '#888', fontSize: '11px' }}>
+                  {(photoIdx % photos.length) + 1}/{photos.length}
+                </span>
+                <button
+                  onClick={() => setPhotoIdx((photoIdx + 1) % photos.length)}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    color: '#ccc',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  ›
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </Html>
+    </group>
+  );
 }

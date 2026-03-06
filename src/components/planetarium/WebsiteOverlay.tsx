@@ -1,5 +1,11 @@
 import { usePlanetariumStore } from '@/store/planetariumStore';
 import { Html } from '@react-three/drei';
+import { dsoPhotoMap } from '@/data/dsoPhotos';
+
+function hasDsoPhoto(itemId: string): boolean {
+  const match = itemId.match(/^dso-(M\d+|C\d+)$/);
+  return match ? !!dsoPhotoMap[match[1]] : false;
+}
 
 export function WebsiteDome() {
   const playlist = usePlanetariumStore((s) => s.playlist);
@@ -22,20 +28,26 @@ export function WebsiteDome() {
   const iframeWidth = usePlanetariumStore((s) => s.iframeWidth);
   const iframeHeight = usePlanetariumStore((s) => s.iframeHeight);
 
-  // Scale so the iframe spans the dome width in world units
+  // If this DSO has a companion astrophoto, shrink and offset left
+  const hasCompanion = hasDsoPhoto(activeItem.id);
+  const panelWidth = hasCompanion ? iframeWidth * 0.48 : iframeWidth;
+
   const scaleX = arcWidth / iframeWidth;
   const scaleY = baseHeight / iframeHeight;
   const uniformScale = Math.min(scaleX, scaleY) * 25;
+
+  // Offset left when companion exists
+  const xOffset = hasCompanion ? -(iframeWidth * 0.52) / 2 - 10 : 0;
 
   return (
     <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
       <Html
         transform
-        position={[0, 0, -radius + 0.2]}
+        position={[hasCompanion ? xOffset * uniformScale * 0.04 : 0, 0, -radius + 0.2]}
         scale={uniformScale}
         occlude={false}
         style={{
-          width: `${iframeWidth}px`,
+          width: `${panelWidth}px`,
           height: `${iframeHeight}px`,
           borderRadius: '12px',
           overflow: 'hidden',
