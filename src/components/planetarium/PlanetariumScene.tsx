@@ -3,14 +3,10 @@ import { Stars } from '@react-three/drei';
 import { Suspense } from 'react';
 import { ProjectionDome } from './ProjectionDome';
 import { WebsiteDome } from './WebsiteOverlay';
-import { AstroImageDome } from './AstroImageDome';
 import { SceneCamera } from './SceneCamera';
 import { PlaceholderDome } from './PlaceholderDome';
 import { usePlanetariumStore } from '@/store/planetariumStore';
-
-function isAstroItem(item: { id: string; folder?: string } | null) {
-  return item?.folder === 'Astrophotography' || item?.id?.startsWith('astro-');
-}
+import { isAstroItem } from './AstroImageDome';
 
 export function PlanetariumScene() {
   const playlist = usePlanetariumStore((s) => s.playlist);
@@ -20,7 +16,8 @@ export function PlanetariumScene() {
 
   const renderContent = () => {
     if (activeItem?.type === 'website') return <WebsiteDome />;
-    if (isAstroItem(activeItem)) return <AstroImageDome />;
+    // Astro items are rendered as HTML overlay outside Canvas, so show placeholder stars here
+    if (isAstroItem(activeItem)) return <PlaceholderDome />;
     if (hasMedia) return <ProjectionDome />;
     return <PlaceholderDome />;
   };
