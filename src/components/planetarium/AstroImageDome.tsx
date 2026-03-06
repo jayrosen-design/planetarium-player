@@ -109,7 +109,6 @@ export function AstroPhotoDome() {
               objectFit: 'contain',
               borderRadius: '12px',
             }}
-            crossOrigin="anonymous"
           />
           {/* Title + navigation */}
           <div
