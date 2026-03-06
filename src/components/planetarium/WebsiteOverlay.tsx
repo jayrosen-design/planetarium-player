@@ -43,6 +43,7 @@ export function WebsiteDome() {
         }}
       >
         <iframe
+          id="planetarium-website-iframe"
           src={activeItem.url}
           style={{
             width: '100%',
@@ -50,8 +51,9 @@ export function WebsiteDome() {
             border: 'none',
             borderRadius: '12px',
           }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; fullscreen"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          allowFullScreen
           title={activeItem.filename}
         />
       </Html>
