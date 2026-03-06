@@ -43,11 +43,8 @@ const Index = () => {
   useEffect(() => {
     if (playlist.length === 0) {
       loadSlides(pdfSlides);
-      // Start at first slide (index 1, after the website item)
-      usePlanetariumStore.getState().setActiveIndex(1);
-      setTimeout(() => {
-        usePlanetariumStore.getState().setIsPlaying(true);
-      }, 500);
+      // Start at first item (first DSO catalog entry)
+      usePlanetariumStore.getState().setActiveIndex(0);
     }
   }, []);
 
