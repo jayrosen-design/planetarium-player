@@ -1,7 +1,7 @@
 import { usePlanetariumStore } from '@/store/planetariumStore';
 import { Html } from '@react-three/drei';
 import { dsoPhotoMap } from '@/data/dsoPhotos';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /** Extract DSO ID from a playlist item id like "dso-M31" */
 function extractDsoId(itemId: string): string | null {
@@ -32,6 +32,11 @@ export function AstroPhotoDome() {
   const [photoIdx, setPhotoIdx] = useState(0);
 
   const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
+
+  // Reset photo index when active item changes
+  useEffect(() => {
+    setPhotoIdx(0);
+  }, [activeItem?.id]);
   if (!activeItem) return null;
 
   // Determine what image to show
@@ -129,18 +134,18 @@ export function AstroPhotoDome() {
               {imageTitle}
             </span>
             {photos.length > 1 && (
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <button
-                  onClick={() => setPhotoIdx((photoIdx - 1 + photos.length) % photos.length)}
+                  onClick={(e) => { e.stopPropagation(); setPhotoIdx((photoIdx - 1 + photos.length) % photos.length); }}
                   style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    border: 'none',
+                    background: 'rgba(255,255,255,0.25)',
+                    border: '1px solid rgba(255,255,255,0.3)',
                     borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    color: '#ccc',
+                    width: '36px',
+                    height: '36px',
+                    color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -148,20 +153,20 @@ export function AstroPhotoDome() {
                 >
                   ‹
                 </button>
-                <span style={{ color: '#888', fontSize: '11px' }}>
+                <span style={{ color: '#ccc', fontSize: '14px', fontWeight: 500 }}>
                   {(photoIdx % photos.length) + 1}/{photos.length}
                 </span>
                 <button
-                  onClick={() => setPhotoIdx((photoIdx + 1) % photos.length)}
+                  onClick={(e) => { e.stopPropagation(); setPhotoIdx((photoIdx + 1) % photos.length); }}
                   style={{
-                    background: 'rgba(255,255,255,0.15)',
-                    border: 'none',
+                    background: 'rgba(255,255,255,0.25)',
+                    border: '1px solid rgba(255,255,255,0.3)',
                     borderRadius: '50%',
-                    width: '24px',
-                    height: '24px',
-                    color: '#ccc',
+                    width: '36px',
+                    height: '36px',
+                    color: '#fff',
                     cursor: 'pointer',
-                    fontSize: '14px',
+                    fontSize: '20px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
