@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive DSO Catalog Simulation</title>
+    <style>
+        :root {
+            --panel-bg: rgba(10, 12, 18, 0.85);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0b0;
+            --accent: #5a80ff;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+            color: var(--text-main);
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #ui-panel {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 10;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            border-radius: 16px;
+            width: 320px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            max-height: calc(100vh - 48px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ui-element {
+            pointer-events: auto;
+        }
+
+        h1 {
+            margin: 0 0 4px 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            margin: 0 0 20px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .dso-selector-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        select {
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            appearance: none;
+        }
+
+        select:hover, select:focus {
+            border-color: var(--accent);
+        }
+        
+        select option {
+            background: #111;
+            color: white;
+        }
+
+        .dso-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        #info-type { font-weight: bold; color: var(--accent); margin-bottom: 4px; display: block;}
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        button:hover { background: rgba(255, 255, 255, 0.2); }
+        button.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        @media (max-width: 600px) {
+            #ui-panel {
+                top: auto;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100% - 60px);
+                padding: 16px;
+                max-height: 50vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Synthesizing Cosmos...</div>
+
+    <div id="ui-panel">
+        <h1>Celestial Catalog</h1>
+        <p class="subtitle">Procedurally Generated Deep Sky Objects</p>
+
+        <div class="dso-selector-group ui-element">
+            <select id="dsoSelect"></select>
+        </div>
+        
+        <div class="dso-info">
+            <span id="info-type">Type: Spiral Galaxy</span>
+            <span id="info-desc">A description of the object will appear here.</span>
+        </div>
+
+        <div class="control-group ui-element">
+            <label for="speedSlider">
+                <span>Time Dilation</span>
+                <span id="speedValue">1.0x</span>
+            </label>
+            <input type="range" id="speedSlider" min="0" max="3" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group ui-element">
+            <button id="toggleAutoRotate" class="active">Auto-Pan Camera: ON</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- DSO Database mapped from uploaded CSV ---
+        // Categories: spiral, edge-on, elliptical, globular, open, planetary, diffuse, snr
+        const dsoCatalog = [
+            { id: 'M1', name: 'Crab Nebula', type: 'snr', desc: 'A rapidly expanding supernova remnant and pulsar wind nebula.' },
+            { id: 'M42', name: 'Orion Nebula', type: 'diffuse', desc: 'A massive, bright emission and reflection nebula where stars are born.' },
+            { id: 'M31', name: 'Andromeda Galaxy', type: 'spiral', desc: 'A massive barred spiral galaxy, our closest large galactic neighbor.' },
+            { id: 'M51', name: 'Whirlpool Galaxy', type: 'spiral', desc: 'A grand-design spiral galaxy interacting with a smaller companion.' },
+            { id: 'M13', name: 'Hercules Cluster', type: 'globular', desc: 'A brilliantly dense spherical collection of hundreds of thousands of ancient stars.' },
+            { id: 'M45', name: 'Pleiades', type: 'open', desc: 'An open star cluster dominated by hot blue and luminous stars.' },
+            { id: 'M57', name: 'Ring Nebula', type: 'planetary', desc: 'A glowing shell of ionized gas ejected by a red giant star.' },
+            { id: 'M104', name: 'Sombrero Galaxy', type: 'edge-on', desc: 'An unbarred spiral galaxy viewed nearly edge-on, with a thick dust lane.' },
+            { id: 'M82', name: 'Cigar Galaxy', type: 'edge-on', desc: 'A starburst galaxy with a heavily disrupted, flattened disk.' },
+            { id: 'M87', name: 'Virgo A', type: 'elliptical', desc: 'A supergiant elliptical galaxy in the constellation Virgo.' },
+            { id: 'M27', name: 'Dumbbell Nebula', type: 'planetary', desc: 'A large, bright planetary nebula shaped like a prolate spheroid.' },
+            { id: 'M8', name: 'Lagoon Nebula', type: 'diffuse', desc: 'A giant interstellar cloud in the constellation Sagittarius.' },
+            { id: 'M16', name: 'Eagle Nebula', type: 'diffuse', desc: 'An active star-forming region containing the famous "Pillars of Creation".' },
+            { id: 'M20', name: 'Trifid Nebula', type: 'diffuse', desc: 'A combination of an open cluster, emission nebula, and reflection nebula.' },
+            { id: 'M33', name: 'Triangulum Galaxy', type: 'spiral', desc: 'A moderately sized spiral galaxy in the Local Group.' },
+            { id: 'M81', name: "Bode's Galaxy", type: 'spiral', desc: 'A grand design spiral galaxy with bright, defined arms.' },
+            { id: 'M101', name: 'Pinwheel Galaxy', type: 'spiral', desc: 'A face-on spiral galaxy known for its massive, sprawling arms.' },
+            // Mappings for the rest of the CSV list
+            { id: 'M100', name: 'M100', type: 'spiral', desc: 'A grand design spiral galaxy in the Virgo Cluster.' },
+            { id: 'M106', name: 'M106', type: 'spiral', desc: 'An intermediate spiral galaxy with active central supermassive black hole.' },
+            { id: 'M108', name: 'M108', type: 'edge-on', desc: 'A barred spiral galaxy viewed almost edge-on.' },
+            { id: 'M109', name: 'M109', type: 'spiral', desc: 'A prominently barred spiral galaxy.' },
+            { id: 'M11', name: 'Wild Duck Cluster', type: 'open', desc: 'One of the richest and most compact open clusters known.' },
+            { id: 'M12', name: 'M12', type: 'globular', desc: 'A loosely concentrated globular cluster.' },
+            { id: 'M17', name: 'Omega Nebula', type: 'diffuse', desc: 'A large star-forming emission nebula.' },
+            { id: 'M19', name: 'M19', type: 'globular', desc: 'The most oblate known globular cluster in our galaxy.' },
+            { id: 'M22', name: 'M22', type: 'globular', desc: 'One of the brightest globular clusters in the sky.' },
+            { id: 'M24', name: 'Sagittarius Star Cloud', type: 'open', desc: 'A massive, dense window into the Sagittarius Arm of our galaxy.' },
+            { id: 'M4', name: 'M4', type: 'globular', desc: 'A loose globular cluster, one of the closest to Earth.' },
+            { id: 'M44', name: 'Beehive Cluster', type: 'open', desc: 'An open cluster, one of the nearest to the Solar System.' },
+            { id: 'M5', name: 'M5', type: 'globular', desc: 'A very large and ancient globular cluster.' },
+            { id: 'M6', name: 'Butterfly Cluster', type: 'open', desc: 'An open cluster of bright blue stars.' },
+            { id: 'M62', name: 'M62', type: 'globular', desc: 'An asymmetric globular cluster near the galactic center.' },
+            { id: 'M63', name: 'Sunflower Galaxy', type: 'spiral', desc: 'A spiral galaxy with tightly wound, patchy arms.' },
+            { id: 'M65', name: 'M65', type: 'spiral', desc: 'An intermediate spiral galaxy forming the Leo Triplet.' },
+            { id: 'M66', name: 'M66', type: 'spiral', desc: 'An intermediate spiral galaxy with asymmetric arms.' },
+            { id: 'M7', name: 'Ptolemy Cluster', type: 'open', desc: 'A bright open cluster in the constellation Scorpius.' },
+            { id: 'M71', name: 'M71', type: 'globular', desc: 'A very loosely packed globular cluster.' },
+            { id: 'M76', name: 'Little Dumbbell', type: 'planetary', desc: 'A complex, bi-lobed planetary nebula.' },
+            { id: 'M80', name: 'M80', type: 'globular', desc: 'A very dense, compact globular cluster.' },
+            { id: 'M83', name: 'Southern Pinwheel', type: 'spiral', desc: 'A barred spiral galaxy with rapid star formation.' },
+            { id: 'M84', name: 'M84', type: 'elliptical', desc: 'A lenticular or elliptical galaxy in the Virgo Cluster.' },
+            { id: 'M85', name: 'M85', type: 'elliptical', desc: 'A lenticular galaxy interacting with a nearby spiral.' },
+            { id: 'M86', name: 'M86', type: 'elliptical', desc: 'A giant lenticular galaxy experiencing ram-pressure stripping.' },
+            { id: 'M95', name: 'M95', type: 'spiral', desc: 'A barred spiral galaxy with a circumnuclear star-forming ring.' },
+            { id: 'M97', name: 'Owl Nebula', type: 'planetary', desc: 'A planetary nebula with two dark, owl-like "eyes".' },
+            { id: 'M99', name: 'M99', type: 'spiral', desc: 'An unbarred spiral galaxy with an asymmetric arm structure.' },
+            { id: 'C4', name: 'Iris Nebula', type: 'diffuse', desc: 'A bright reflection nebula illuminated by a central star.' },
+            { id: 'C9', name: 'Cave Nebula', type: 'diffuse', desc: 'An emission nebula associated with molecular clouds.' },
+            { id: 'C11', name: 'Bubble Nebula', type: 'diffuse', desc: 'An emission nebula blown out by stellar wind.' },
+            { id: 'C14', name: 'Double Cluster', type: 'open', desc: 'Two very close, rich open star clusters.' },
+            { id: 'C19', name: 'Cocoon Nebula', type: 'diffuse', desc: 'A compact reflection and emission nebula.' },
+            { id: 'C20', name: 'North America Nebula', type: 'diffuse', desc: 'A huge emission nebula shaped like the continent.' },
+            { id: 'C22', name: 'Blue Snowball', type: 'planetary', desc: 'A small, bright, and blue planetary nebula.' },
+            { id: 'C27', name: 'Crescent Nebula', type: 'diffuse', desc: 'An emission nebula formed by stellar winds from a Wolf-Rayet star.' },
+            { id: 'C30', name: 'NGC 7331', type: 'spiral', desc: 'An unbarred spiral galaxy often compared to the Milky Way.' },
+            { id: 'C31', name: 'Flaming Star Nebula', type: 'diffuse', desc: 'An emission and reflection nebula in Auriga.' },
+            { id: 'C33', name: 'East Veil Nebula', type: 'snr', desc: 'A delicate, filamentary portion of the Cygnus Loop supernova remnant.' },
+            { id: 'C34', name: 'West Veil Nebula', type: 'snr', desc: 'The western portion of the Cygnus Loop, known as the Witch\'s Broom.' },
+            { id: 'C41', name: 'Hyades', type: 'open', desc: 'The nearest open cluster to the Solar System.' },
+            { id: 'C44', name: 'Rho Ophiuchi Cloud', type: 'diffuse', desc: 'A complex of dark nebulas and reflection nebulas.' },
+            { id: 'C49', name: 'Rosette Nebula', type: 'diffuse', desc: 'A large, circular H II region surrounding an open cluster.' },
+            { id: 'C5', name: 'IC 342', type: 'spiral', desc: 'An intermediate spiral galaxy obscured by Milky Way dust.' },
+            { id: 'C63', name: 'Helix Nebula', type: 'planetary', desc: 'A large, close planetary nebula resembling an eye.' },
+            { id: 'C69', name: 'Bug Nebula', type: 'planetary', desc: 'A highly complex, bipolar planetary nebula.' },
+            { id: 'C77', name: 'Centaurus A', type: 'elliptical', desc: 'A peculiar galaxy with prominent dust lanes and relativistic jets.' },
+            { id: 'C80', name: 'Omega Centauri', type: 'globular', desc: 'The largest and brightest globular cluster in the Milky Way.' }
+        ];
+
+        // Sort catalog alphabetically by ID for the dropdown
+        dsoCatalog.sort((a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
+
+        window.onload = function() {
+            // --- Scene Setup ---
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.012);
+
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 25);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 80;
+            controls.minDistance = 2;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+
+            // --- Textures ---
+            function createRadialTexture(softness) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64; canvas.height = 64;
+                const context = canvas.getContext('2d');
+                const center = 32;
+                const gradient = context.createRadialGradient(center, center, 0, center, center, center);
+                
+                if (softness === 'star') {
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    gradient.addColorStop(0.1, 'rgba(255, 240, 200, 0.8)');
+                    gradient.addColorStop(0.4, 'rgba(100, 150, 255, 0.2)');
+                    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                } else { // Cloud texture for nebulas
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                    gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.3)');
+                    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                }
+
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, 64, 64);
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            const starTexture = createRadialTexture('star');
+            const cloudTexture = createRadialTexture('cloud');
+
+            let currentObjectGroup = new THREE.Group();
+            scene.add(currentObjectGroup);
+
+            // --- Seeded Random Helper to make each DSO consistent but unique ---
+            function hashStr(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                return Math.abs(hash);
+            }
+            function seededRandom(seedStr, min, max) {
+                const h = hashStr(seedStr);
+                return min + ((h % 1000) / 1000) * (max - min);
+            }
+
+            // --- Procedural Generators ---
+            
+            function buildParticles(count, size, texture, opacity, blending, positions, colors) {
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: size,
+                    sizeAttenuation: true,
+                    depthWrite: false,
+                    blending: blending,
+                    vertexColors: true,
+                    map: texture,
+                    transparent: true,
+                    opacity: opacity
+                });
+                return new THREE.Points(geometry, material);
+            }
+
+            function generateSpiral(seed, params) {
+                const count = params.count || 100000;
+                const radius = params.radius || seededRandom(seed, 10, 15);
+                const branches = Math.floor(seededRandom(seed+'b', 2, 5));
+                const spin = seededRandom(seed+'s', 0.8, 1.5);
+                
+                const colorInside = new THREE.Color(params.colorIn || '#ffddaa');
+                const colorOutside = new THREE.Color(params.colorOut || '#2255ff');
+
+                const pos = new Float32Array(count * 3);
+                const col = new Float32Array(count * 3);
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    const rDist = Math.pow(Math.random(), 2.2);
+                    const r = rDist * radius;
+                    const spinAngle = r * spin;
+                    const branchAngle = ((i % branches) / branches) * Math.PI * 2;
+
+                    const randomX = Math.pow(Math.random(), 2.5) * (Math.random() < 0.5 ? 1 : -1) * 0.4 * r;
+                    const randomY = Math.pow(Math.random(), 2.5) * (Math.random() < 0.5 ? 1 : -1) * 0.2 * r;
+                    const randomZ = Math.pow(Math.random(), 2.5) * (Math.random() < 0.5 ? 1 : -1) * 0.4 * r;
+
+                    pos[i3] = Math.cos(branchAngle + spinAngle) * r + randomX;
+                    pos[i3 + 1] = randomY * (params.flatten ? 0.2 : 1);
+                    pos[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
+
+                    const mixedColor = colorInside.clone().lerp(colorOutside, r / radius);
+                    col[i3] = mixedColor.r; col[i3+1] = mixedColor.g; col[i3+2] = mixedColor.b;
+                }
+                return buildParticles(count, 0.15, starTexture, 0.9, THREE.AdditiveBlending, pos, col);
+            }
+
+            function generateElliptical(seed) {
+                const count = 80000;
+                const radius = seededRandom(seed, 8, 12);
+                const pos = new Float32Array(count * 3);
+                const col = new Float32Array(count * 3);
+                const coreColor = new THREE.Color('#ffddaa');
+                const edgeColor = new THREE.Color('#ffaa66');
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    const r = Math.pow(Math.random(), 3) * radius; // highly dense core
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+
+                    // stretch along X
+                    pos[i3] = r * Math.sin(phi) * Math.cos(theta) * 1.5;
+                    pos[i3 + 1] = r * Math.cos(phi) * 0.8;
+                    pos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+                    const mixed = coreColor.clone().lerp(edgeColor, r / radius);
+                    col[i3] = mixed.r; col[i3+1] = mixed.g; col[i3+2] = mixed.b;
+                }
+                return buildParticles(count, 0.2, starTexture, 0.8, THREE.AdditiveBlending, pos, col);
+            }
+
+            function generateCluster(seed, isGlobular) {
+                const count = isGlobular ? 60000 : 5000;
+                const radius = isGlobular ? seededRandom(seed, 5, 8) : seededRandom(seed, 8, 15);
+                const power = isGlobular ? 3 : 1.2; // Globulars are highly concentrated
+                const pos = new Float32Array(count * 3);
+                const col = new Float32Array(count * 3);
+                
+                const c1 = isGlobular ? new THREE.Color('#ffffff') : new THREE.Color('#88bbff');
+                const c2 = isGlobular ? new THREE.Color('#ffaa44') : new THREE.Color('#ffffff');
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    const r = Math.pow(Math.random(), power) * radius;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos((Math.random() * 2) - 1);
+
+                    pos[i3] = r * Math.sin(phi) * Math.cos(theta);
+                    pos[i3 + 1] = r * Math.cos(phi);
+                    pos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+                    const mixed = c1.clone().lerp(c2, Math.random()); // Random star colors
+                    col[i3] = mixed.r; col[i3+1] = mixed.g; col[i3+2] = mixed.b;
+                }
+                return buildParticles(count, isGlobular ? 0.3 : 0.6, starTexture, 0.9, THREE.AdditiveBlending, pos, col);
+            }
+
+            function generatePlanetaryNebula(seed) {
+                const count = 40000;
+                const radius = seededRandom(seed, 4, 7);
+                const isRing = seededRandom(seed+'r', 0, 1) > 0.5;
+                const pos = new Float32Array(count * 3);
+                const col = new Float32Array(count * 3);
+                
+                const colors = [new THREE.Color('#11ffaa'), new THREE.Color('#ff2255'), new THREE.Color('#2255ff')];
+                const c1 = colors[Math.floor(seededRandom(seed+'c1', 0, 2.9))];
+                const c2 = colors[Math.floor(seededRandom(seed+'c2', 0, 2.9))];
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    // Shell / Torus distribution
+                    const r = radius + (Math.random() - 0.5) * 2.0; 
+                    const theta = Math.random() * Math.PI * 2;
+                    let phi;
+                    
+                    if (isRing) {
+                        phi = Math.PI/2 + (Math.random() - 0.5) * 0.8; // Torus
+                    } else {
+                        phi = Math.acos((Math.random() * 2) - 1); // Sphere shell
+                    }
+
+                    pos[i3] = r * Math.sin(phi) * Math.cos(theta);
+                    pos[i3 + 1] = r * Math.cos(phi);
+                    pos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+                    const mixed = c1.clone().lerp(c2, Math.random());
+                    col[i3] = mixed.r; col[i3+1] = mixed.g; col[i3+2] = mixed.b;
+                }
+                
+                // Add central white dwarf
+                const dw = buildParticles(1, 2.0, starTexture, 1.0, THREE.AdditiveBlending, new Float32Array([0,0,0]), new Float32Array([1,1,1]));
+                const shell = buildParticles(count, 0.4, cloudTexture, 0.6, THREE.AdditiveBlending, pos, col);
+                
+                const group = new THREE.Group();
+                group.add(shell);
+                group.add(dw);
+                return group;
+            }
+
+            function generateDiffuseNebula(seed, isSNR) {
+                const count = isSNR ? 50000 : 20000; // More fine particles for SNR
+                const radius = seededRandom(seed, 10, 18);
+                const pos = new Float32Array(count * 3);
+                const col = new Float32Array(count * 3);
+                
+                const rColor = new THREE.Color('#ff2244');
+                const bColor = new THREE.Color('#2288ff');
+
+                for (let i = 0; i < count; i++) {
+                    const i3 = i * 3;
+                    
+                    // Clustered noise distribution
+                    let r = Math.random() * radius;
+                    let theta = Math.random() * Math.PI * 2;
+                    let phi = Math.acos((Math.random() * 2) - 1);
+
+                    // Add some irregularity (lobes/filaments)
+                    if (isSNR) {
+                        // Explosion filaments
+                        r = radius * Math.random();
+                        if(Math.random() > 0.7) r *= 1.5; // Spikes
+                    } else {
+                        // Clouds
+                        r = r * (0.5 + 0.5 * Math.sin(theta * 3) * Math.cos(phi * 2)); 
+                    }
+
+                    pos[i3] = r * Math.sin(phi) * Math.cos(theta);
+                    pos[i3 + 1] = r * Math.cos(phi);
+                    pos[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+
+                    const mixed = rColor.clone().lerp(bColor, Math.random());
+                    col[i3] = mixed.r; col[i3+1] = mixed.g; col[i3+2] = mixed.b;
+                }
+                
+                const size = isSNR ? 0.3 : 3.0;
+                const opacity = isSNR ? 0.6 : 0.15; // Very transparent for diffuse
+                return buildParticles(count, size, cloudTexture, opacity, THREE.AdditiveBlending, pos, col);
+            }
+
+
+            // --- Core System Loader ---
+            function loadDSO(dsoObj) {
+                // Clean current scene
+                while(currentObjectGroup.children.length > 0) {
+                    const child = currentObjectGroup.children[0];
+                    if(child.geometry) child.geometry.dispose();
+                    if(child.material) child.material.dispose();
+                    currentObjectGroup.remove(child);
+                }
+
+                document.getElementById('info-type').innerText = `Type: ${dsoObj.type.toUpperCase()}`;
+                document.getElementById('info-desc').innerText = dsoObj.desc || 'A fascinating object in the night sky.';
+                
+                currentObjectGroup.rotation.set(0,0,0); // reset rotation
+
+                let mesh;
+                switch(dsoObj.type) {
+                    case 'spiral':
+                        mesh = generateSpiral(dsoObj.id, { colorIn: '#ffd0a0', colorOut: '#4070ff' });
+                        break;
+                    case 'edge-on':
+                        mesh = generateSpiral(dsoObj.id, { colorIn: '#ffddbb', colorOut: '#ddaa88', flatten: true });
+                        currentObjectGroup.rotation.z = Math.PI / 2.2; // Tilt it
+                        break;
+                    case 'elliptical':
+                        mesh = generateElliptical(dsoObj.id);
+                        break;
+                    case 'globular':
+                        mesh = generateCluster(dsoObj.id, true);
+                        break;
+                    case 'open':
+                        mesh = generateCluster(dsoObj.id, false);
+                        break;
+                    case 'planetary':
+                        mesh = generatePlanetaryNebula(dsoObj.id);
+                        break;
+                    case 'snr':
+                        mesh = generateDiffuseNebula(dsoObj.id, true);
+                        break;
+                    case 'diffuse':
+                    default:
+                        mesh = generateDiffuseNebula(dsoObj.id, false);
+                        // Add some embedded bright stars
+                        const embeddedStars = generateCluster(dsoObj.id, false); 
+                        embeddedStars.scale.set(0.5,0.5,0.5);
+                        currentObjectGroup.add(embeddedStars);
+                        break;
+                }
+
+                currentObjectGroup.add(mesh);
+            }
+
+            // --- Background Starfield ---
+            const bgGeometry = new THREE.BufferGeometry();
+            const bgPositions = new Float32Array(3000 * 3);
+            for(let i=0; i<3000; i++) {
+                const r = 50 + Math.random() * 50;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                bgPositions[i*3] = r * Math.sin(phi) * Math.cos(theta);
+                bgPositions[i*3+1] = r * Math.cos(phi);
+                bgPositions[i*3+2] = r * Math.sin(phi) * Math.sin(theta);
+            }
+            bgGeometry.setAttribute('position', new THREE.BufferAttribute(bgPositions, 3));
+            const bgStars = new THREE.Points(bgGeometry, new THREE.PointsMaterial({
+                size: 0.15, color: 0xffffff, transparent: true, opacity: 0.5, map: starTexture, blending: THREE.AdditiveBlending
+            }));
+            scene.add(bgStars);
+
+            // --- UI Setup ---
+            const selectEl = document.getElementById('dsoSelect');
+            dsoCatalog.forEach(dso => {
+                const opt = document.createElement('option');
+                opt.value = dso.id;
+                opt.text = `${dso.id} - ${dso.name}`;
+                selectEl.appendChild(opt);
+            });
+
+            selectEl.addEventListener('change', (e) => {
+                const selectedId = e.target.value;
+                const dso = dsoCatalog.find(d => d.id === selectedId);
+                loadDSO(dso);
+            });
+
+            // Initial Load - support hash-based DSO selection
+            const hashId = window.location.hash.replace('#', '');
+            const initialDSO = hashId ? dsoCatalog.find(d => d.id === hashId) || dsoCatalog[0] : dsoCatalog[0];
+            if (hashId && initialDSO) {
+                selectEl.value = initialDSO.id;
+            }
+            loadDSO(initialDSO);
+
+            // Controls logic
+            let timeMultiplier = 1.0;
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                timeMultiplier = parseFloat(e.target.value);
+                document.getElementById('speedValue').innerText = timeMultiplier.toFixed(1) + 'x';
+            });
+
+            const toggleAutoBtn = document.getElementById('toggleAutoRotate');
+            toggleAutoBtn.addEventListener('click', () => {
+                controls.autoRotate = !controls.autoRotate;
+                toggleAutoBtn.innerText = controls.autoRotate ? 'Auto-Pan Camera: ON' : 'Auto-Pan Camera: OFF';
+                toggleAutoBtn.classList.toggle('active');
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Loading screen hide
+            setTimeout(() => document.getElementById('loading').style.opacity = '0', 800);
+
+            // --- Animation Loop ---
+            const clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+                const delta = clock.getDelta();
+
+                if (timeMultiplier > 0) {
+                    currentObjectGroup.rotation.y += 0.05 * timeMultiplier * delta;
+                    bgStars.rotation.y += 0.005 * timeMultiplier * delta;
+                }
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+        };
+    </script>
+</body>
+</html>
