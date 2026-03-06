@@ -1,5 +1,5 @@
 import { usePlanetariumStore } from '@/store/planetariumStore';
-import { Html } from '@react-three/drei';
+import { Html, Billboard } from '@react-three/drei';
 import { dsoPhotoMap } from '@/data/dsoPhotos';
 import { useState } from 'react';
 
@@ -175,12 +175,24 @@ export function AstroPhotoDome() {
     </Html>
   );
 
-  // Both standalone and companion use the same rotation as the simulation dome
-  return (
-    <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
-      <group position={isStandalone ? [0, 0, 0] : [xOffset * uniformScale * 0.04, 0, 0]}>
+  if (isStandalone) {
+    return (
+      <group rotation={[(screenTilt * Math.PI) / 180, (screenRotation * Math.PI) / 180, 0]}>
         {panel}
       </group>
-    </group>
+    );
+  }
+
+  // Companion mode: billboard so it always faces the camera
+  return (
+    <Billboard
+      follow
+      lockX={false}
+      lockY={false}
+      lockZ={false}
+      position={[xOffset * uniformScale * 0.04, 0, -radius + 0.2]}
+    >
+      {panel}
+    </Billboard>
   );
 }
