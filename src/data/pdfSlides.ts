@@ -34,6 +34,14 @@ import page32 from '@/assets/slides/page_32.jpg';
 
 import { MediaItem } from '@/store/planetariumStore';
 
+const astroApertureItem: MediaItem = {
+  id: 'website-astro-aperture',
+  filename: 'Astro Aperture',
+  type: 'website',
+  blobUrl: '',
+  url: 'https://astroaperture.lovable.app/',
+};
+
 const websiteItem: MediaItem = {
   id: 'website-dark-sky',
   filename: 'Dark Sky Simulator',
@@ -62,4 +70,4 @@ const slideItems: MediaItem[] = [
   blobUrl: url,
 }));
 
-export const pdfSlides: MediaItem[] = [websiteItem, exoskyItem, ...slideItems];
+export const pdfSlides: MediaItem[] = [astroApertureItem, websiteItem, exoskyItem, ...slideItems];
