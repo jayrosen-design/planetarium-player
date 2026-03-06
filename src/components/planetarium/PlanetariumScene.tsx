@@ -3,24 +3,16 @@ import { Stars } from '@react-three/drei';
 import { Suspense } from 'react';
 import { ProjectionDome } from './ProjectionDome';
 import { WebsiteDome } from './WebsiteOverlay';
+import { AstroPhotoDome, isAstroItem } from './AstroImageDome';
 import { SceneCamera } from './SceneCamera';
 import { PlaceholderDome } from './PlaceholderDome';
 import { usePlanetariumStore } from '@/store/planetariumStore';
-import { isAstroItem } from './AstroImageDome';
 
 export function PlanetariumScene() {
   const playlist = usePlanetariumStore((s) => s.playlist);
   const activeIndex = usePlanetariumStore((s) => s.activeIndex);
   const activeItem = activeIndex >= 0 && activeIndex < playlist.length ? playlist[activeIndex] : null;
   const hasMedia = activeIndex >= 0;
-
-  const renderContent = () => {
-    if (activeItem?.type === 'website') return <WebsiteDome />;
-    // Astro items are rendered as HTML overlay outside Canvas, so show placeholder stars here
-    if (isAstroItem(activeItem)) return <PlaceholderDome />;
-    if (hasMedia) return <ProjectionDome />;
-    return <PlaceholderDome />;
-  };
 
   return (
     <Canvas
@@ -32,7 +24,23 @@ export function PlanetariumScene() {
         <SceneCamera />
         <Stars radius={120} depth={60} count={4000} factor={5} saturation={0.1} fade speed={0.8} />
         <ambientLight intensity={0.05} />
-        {renderContent()}
+
+        {/* Main content */}
+        {activeItem?.type === 'website' && !isAstroItem(activeItem) ? (
+          <WebsiteDome />
+        ) : isAstroItem(activeItem) ? (
+          // Standalone astrophotography - just the photo panel with starfield
+          <AstroPhotoDome />
+        ) : hasMedia ? (
+          <ProjectionDome />
+        ) : (
+          <PlaceholderDome />
+        )}
+
+        {/* Companion astrophoto panel for DSO catalog items */}
+        {activeItem?.type === 'website' && !isAstroItem(activeItem) && (
+          <AstroPhotoDome />
+        )}
       </Suspense>
     </Canvas>
   );

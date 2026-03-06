@@ -3,8 +3,6 @@ import { PlanetariumScene } from '@/components/planetarium/PlanetariumScene';
 import { MediaBar } from '@/components/planetarium/MediaBar';
 import { SettingsPanel } from '@/components/planetarium/SettingsPanel';
 import { PlaylistPanel } from '@/components/planetarium/PlaylistPanel';
-import { AstroPhotoPanel } from '@/components/planetarium/AstroPhotoPanel';
-import { AstroImageOverlay } from '@/components/planetarium/AstroImageDome';
 
 import { pdfSlides } from '@/data/pdfSlides';
 import { usePlanetariumStore } from '@/store/planetariumStore';
@@ -53,7 +51,6 @@ const Index = () => {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-background select-none">
       <PlanetariumScene />
-      <AstroImageOverlay />
       <PlaylistPanel />
       <SettingsPanel />
       <MediaBar />
