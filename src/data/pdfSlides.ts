@@ -193,7 +193,15 @@ export const dsoCatalog = [
   { id: 'C80', name: 'Omega Centauri', type: 'globular' },
 ];
 
-const dsoItems: MediaItem[] = dsoCatalog.map((dso) => ({
+// Reorder: items with astrophotography first (in dsoPhotoMap key order), then the rest
+const dsoPhotoKeys = Object.keys(dsoPhotoMap);
+const withPhoto = dsoCatalog.filter((dso) => dsoPhotoKeys.includes(dso.id));
+const withoutPhoto = dsoCatalog.filter((dso) => !dsoPhotoKeys.includes(dso.id));
+// Sort "with photo" items in the same order as dsoPhotoMap keys
+withPhoto.sort((a, b) => dsoPhotoKeys.indexOf(a.id) - dsoPhotoKeys.indexOf(b.id));
+const sortedCatalog = [...withPhoto, ...withoutPhoto];
+
+const dsoItems: MediaItem[] = sortedCatalog.map((dso) => ({
   id: `dso-${dso.id}`,
   filename: `${dso.id} – ${dso.name}`,
   type: 'website' as const,
